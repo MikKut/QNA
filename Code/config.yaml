@@ -1,0 +1,88 @@
+project:
+  name: "mnist_pca8_angle"
+  seed: 42
+  output_root: "./runs"
+
+paths:
+  data_root: "./data"
+  X_train_pca: "./data/X_train_pca.npy"
+  X_val_pca:   "./data/X_val_pca.npy"
+  X_test_pca:  "./data/X_test_pca.npy"
+  y_train: "./data/y_train.npy"
+  y_val:   "./data/y_val.npy"
+  y_test:  "./data/y_test.npy"
+  pca_meta: "./data/pca_meta.npz"
+  preprocess_stats: "./data/preprocess_stats.yaml"
+  z_cache:
+    train: "./data/Z_train_std.npy"
+    val:   "./data/Z_val_std.npy"
+    test:  "./data/Z_test_std.npy"
+
+run:
+  stage: "both"            # "preprocess" | "train" | "both"
+
+pixels:
+  scale_to_unit: true
+  dtype: "float32"
+
+split:
+  make_val_split: true
+  val_size: 10000
+  stratify: true
+  shuffle: true
+  split_seed: 42
+
+pca:
+  dim: 8
+  whiten: false            # абляція C
+  svd_solver: "auto"
+  random_state: 42
+  save_extras: true
+
+scaler:                     # обирається на етапі fit (офлайн)
+  method: "zscore"         # "zscore" | "robust" | "global_l2" | "maxabs"
+  eps: 1.0e-8
+  robust:
+    kind: "mad"            # "mad" | "iqr"
+    c_mad: 1.4826
+    c_iqr: 1.349
+  global:
+    axis: "vector"
+
+angles:                     # використовується у тренуванні (онлайн)
+  k: 2.5
+  angle_max: 3.141592653589793
+  clip: true
+
+training:
+  optimizer: "adam"        # "adam" | "qna_adam"
+  lr: 0.001
+  batch_size: 256
+  epochs: 30
+  shots: 500
+  grad_stats_interval: 100
+  target_val_acc: 0.95
+
+diagnostics:
+  prescreen_k: [1.5, 2.0, 2.5, 3.0, 3.5]
+  save_tables_to: "./runs/preproc/diag_k.csv"
+  save_stats_to:  "./runs/preproc/z_stats.json"
+  make_plots: false
+
+z_cache:
+  enable: true
+  fingerprint: true
+
+logging:
+  level: "INFO"
+  preprocess_log: "./runs/preproc/preprocess.log"
+  train_log: "./runs/train/train.log"
+
+safety:
+  overwrite: true
+  assert_no_nan: true
+
+csv:
+  delimiter: ";"       
+  excel_sep_hint: true  
+  utf8_bom: true      
