@@ -1,0 +1,38 @@
+2025-09-02T23:57:33+0300 | INFO | qna | Switch shots: 50 -> 50 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 50}}
+2025-09-03T01:39:45+0300 | INFO | qna | Switch shots: 50 -> 50 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 50}}
+2025-09-03T01:43:42+0300 | INFO | qna | Switch shots: 50 -> 50 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 50}}
+2025-09-03T01:44:03+0300 | INFO | qna | Switch shots: 50 -> 50 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 50}}
+2025-09-03T03:21:41+0300 | INFO | qna | PROFILE | shots=  50 | batch=8 | n_qubits=8 | layers=2 | avg_time=0.081228 s
+2025-09-03T03:21:41+0300 | INFO | qna | PROFILE | shots= 100 | batch=8 | n_qubits=8 | layers=2 | avg_time=0.080396 s
+2025-09-03T03:21:42+0300 | INFO | qna | PROFILE | shots= 500 | batch=8 | n_qubits=8 | layers=2 | avg_time=0.081220 s
+2025-09-03T03:21:42+0300 | INFO | qna | PROFILE | shots=1000 | batch=8 | n_qubits=8 | layers=2 | avg_time=0.078959 s
+2025-09-03T03:21:42+0300 | INFO | qna | Switch shots: 50 -> 50 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 50}}
+2025-09-03T03:21:43+0300 | INFO | qna | Switch shots: 50 -> 100 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 100}}
+2025-09-03T03:21:43+0300 | INFO | qna | Switch shots: 100 -> 500 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 500}}
+2025-09-03T03:21:43+0300 | INFO | qna | Switch shots: 500 -> 1000 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 1000}}
+2025-09-03T03:21:44+0300 | INFO | qna | PROFILE SUMMARY
+ shots | avg_time (s)
+------------------------
+    50 |     0.115602
+   100 |     0.076815
+   500 |     0.078080
+  1000 |     0.082558
+2025-09-03T03:21:50+0300 | INFO | qna | Reseed device: 777 -> 778 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 50}}
+2025-09-03T03:21:50+0300 | INFO | qna | Switch shots: 50 -> 200 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 200}}
+2025-09-03T03:31:40+0300 | INFO | qna | PROFILE | shots=  50 | batch=8 | n_qubits=8 | layers=2 | avg_time=0.075625 s
+2025-09-03T03:31:41+0300 | INFO | qna | PROFILE | shots= 100 | batch=8 | n_qubits=8 | layers=2 | avg_time=0.080151 s
+2025-09-03T03:31:41+0300 | INFO | qna | PROFILE | shots= 500 | batch=8 | n_qubits=8 | layers=2 | avg_time=0.080316 s
+2025-09-03T03:31:42+0300 | INFO | qna | PROFILE | shots=1000 | batch=8 | n_qubits=8 | layers=2 | avg_time=0.080401 s
+2025-09-03T03:31:42+0300 | INFO | qna | Switch shots: 50 -> 50 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 50}}
+2025-09-03T03:31:42+0300 | INFO | qna | Switch shots: 50 -> 100 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 100}}
+2025-09-03T03:31:42+0300 | INFO | qna | Switch shots: 100 -> 500 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 500}}
+2025-09-03T03:31:43+0300 | INFO | qna | Switch shots: 500 -> 1000 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 1000}}
+2025-09-03T03:31:43+0300 | INFO | qna | PROFILE SUMMARY
+ shots | avg_time (s)
+------------------------
+    50 |     0.079262
+   100 |     0.082147
+   500 |     0.076991
+  1000 |     0.084533
+2025-09-03T03:31:44+0300 | INFO | qna | Reseed device: 777 -> 778 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 50}}
+2025-09-03T03:31:44+0300 | INFO | qna | Switch shots: 50 -> 200 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 200}}

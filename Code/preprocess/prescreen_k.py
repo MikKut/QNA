@@ -32,7 +32,7 @@ from Code.utils.io_utils import (
 )
 from Code.logger import setup_logger
 from Code.preprocess.transforms import PCScaler, validate_z_cache_from_stats
-from Code.preprocess.angle_metrics import clip_rate_grid_z, suggest_k_from_target_clip
+from Code.utils.angle_metrics import clip_rate_grid_z, suggest_k_from_target_clip
 
 
 # ---------------------- CLI ----------------------

@@ -1,0 +1,22 @@
+2025-09-03T00:22:05+0300 | INFO | qna | === SANITY: start ===
+2025-09-03T00:22:05+0300 | INFO | qna | Config path: Code/config.yaml
+2025-09-03T00:22:05+0300 | INFO | qna | Global RNG seeded with 42
+2025-09-03T00:22:05+0300 | INFO | qna | Switch shots: 100 -> 100 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 100}}
+2025-09-03T00:22:05+0300 | INFO | qna | Layer meta: n_qubits=8, n_layers=2, output_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 100}, shots=100, encoding=ry, reupload=True, topology=ring
+2025-09-03T00:22:32+0300 | INFO | qna | === SANITY: start ===
+2025-09-03T00:22:32+0300 | INFO | qna | Config path: Code/config.yaml
+2025-09-03T00:22:32+0300 | INFO | qna | Global RNG seeded with 42
+2025-09-03T00:22:32+0300 | INFO | qna | Switch shots: 100 -> 100 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 100}}
+2025-09-03T00:22:32+0300 | INFO | qna | Layer meta: n_qubits=8, n_layers=2, output_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 100}, shots=100, encoding=ry, reupload=True, topology=ring
+2025-09-03T00:31:37+0300 | INFO | qna | === SANITY: start ===
+2025-09-03T00:31:37+0300 | INFO | qna | Config path: Code/config.yaml
+2025-09-03T00:31:37+0300 | INFO | qna | Global RNG seeded with 42
+2025-09-03T00:31:37+0300 | INFO | qna | Switch shots: 100 -> 100 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 100}}
+2025-09-03T00:31:37+0300 | INFO | qna | Layer meta: n_qubits=8, n_layers=2, output_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 100}, shots=100, encoding=ry, reupload=True, topology=ring
+2025-09-03T06:08:54+0300 | INFO | qna | === SANITY: start ===
+2025-09-03T06:08:54+0300 | INFO | qna | Config path: Code/config.yaml
+2025-09-03T06:08:54+0300 | INFO | qna | Global RNG seeded with 42
+2025-09-03T06:08:54+0300 | INFO | qna | Switch shots: 100 -> 100 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 100, 'analytic': False}}
+2025-09-03T06:08:54+0300 | INFO | qna | Layer meta: n_qubits=8, n_layers=2, output_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 100, 'analytic': False}, shots=100, encoding=ry, reupload=True, topology=ring
+2025-09-03T06:08:54+0300 | INFO | qna | sanity/quantum | {'sanity/quantum/loss': 0.8511999249458313, 'sanity/quantum/phi/batch': 4.0, 'sanity/quantum/phi/n_qubits': 8.0, 'sanity/quantum/phi/min': -2.7273030281066895, 'sanity/quantum/phi/max': 2.7595698833465576, 'sanity/quantum/phi/mean': -0.13829922676086426, 'sanity/quantum/phi/std': 1.7115864753723145, 'sanity/quantum/phi/saturation_rate': 0.0, 'sanity/quantum/phi/live_rate': 0.25, 'sanity/quantum/expval/min': -0.30000001192092896, 'sanity/quantum/expval/max': 0.3199999928474426, 'sanity/quantum/expval/mean': 0.02499999850988388, 'sanity/quantum/expval/std': 0.16116760671138763, 'sanity/quantum/expval/numel': 32.0, 'sanity/quantum/theta/L': 2.0, 'sanity/quantum/theta/n_qubits': 8.0, 'sanity/quantum/theta/has_grad': 1.0, 'sanity/quantum/theta/grad_mean': -0.13037501275539398, 'sanity/quantum/theta/grad_std': 0.41218301653862, 'sanity/quantum/theta/grad_max': 1.079200029373169, 'sanity/quantum/theta/grad_l2': 1.7292425632476807, 'sanity/quantum/theta/grad.mean_abs': 0.3333750069141388, 'sanity/quantum/theta/grad.std_abs': 0.2752336859703064, 'sanity/quantum/theta/grad.l2': 1.7292425836037604, 'sanity/quantum/theta/grad.max_abs': 1.079200029373169, 'sanity/quantum/theta/grad.zero_frac': 0.0}
+2025-09-03T06:08:54+0300 | INFO | qna | === SANITY: done ===

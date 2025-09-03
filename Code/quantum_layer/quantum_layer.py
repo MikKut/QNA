@@ -1,137 +1,194 @@
-# quantum_layer.py
+# Code/quantum/quantum_layer.py
+# -*- coding: utf-8 -*-
+from __future__ import annotations
 
+from typing import Any, Dict, Literal, Optional, Sequence, Tuple
+import logging
 import torch
 import torch.nn as nn
-import pennylane as qml
-from Code.utils.utils import create_quantum_device, expectation_to_tensor, assert_shape
-from Code.logger import setup_logger
+
+from Code.logger import setup_logger  # ← ваш кастомний логер
+from .devices import DeviceSpec, spec_from_config, with_seed, with_shots
+from .qnode_factory import create_qnode
+from Code.utils.tensor_utils import batched_apply
+Topology = Literal["ring", "linear"]
+EncodingKind = Literal["ry", "rx", "rz", "xy"]
+MeasurementKind = Literal["Z", "ZX", "ZXY"]
+
 
 class QuantumLayer(nn.Module):
-    """
-    QuantumLayer відповідає за квантове кодування PCA-даних та застосування
-    hardware-efficient ansatz для обчислення expectation values.
-
-    Вхід: batch класичних даних (batch_size × n_qubits)
-    Вихід: expectation values (batch_size × n_qubits)
-    """
-
-    def __init__(self, config, device=None, logger=None):
-        """
-        Args:
-            config (dict): Конфігурація шару (n_qubits, n_layers, shots, encoding_type, measurement).
-            device (torch.device): CPU або CUDA.
-            logger: Користувацький або внутрішній логер.
-        """
+    def __init__(
+        self,
+        n_qubits: int,
+        *,
+        n_layers: int = 2,
+        topology: Topology = "ring",
+        encoding: EncodingKind | str = "ry",
+        reupload: bool = True,
+        measurement: MeasurementKind | Sequence[str] = "Z",
+        diff_method: Literal["parameter-shift", "best"] = "parameter-shift",
+        spec: Optional[DeviceSpec] = None,
+        device_name: str = "default.qubit",
+        shots: Optional[int] = 100,
+        seed: int = 42,
+        dtype: torch.dtype = torch.float32,
+        logger: Optional[logging.Logger] = None, 
+        param_seed: Optional[int] = 0,            
+        param_init_std: float = 0.1,
+    ) -> None:
         super().__init__()
 
-        # Параметри з конфігурації
-        self.n_qubits = config['n_qubits']
-        self.n_layers = config['n_layers']
-        self.shots = config['shots']
-        self.topology = config['topology']
-        self.encoding_type = config.get('encoding_type', 'Ry')
-        self.measurement = config.get('measurement', 'PauliZ')
+        if n_qubits <= 0:
+            raise ValueError(f"n_qubits must be > 0, got {n_qubits}.")
+        if n_layers <= 0:
+            raise ValueError(f"n_layers must be > 0, got {n_layers}.")
 
-        # Пристрій PyTorch
-        self.torch_device = device if device else torch.device('cpu')
+        # Логер модуля (idempotent у вашій реалізації setup_logger)
+        self.logger = logger or setup_logger("quantum.layer")
 
-        # Створюємо логер
-        self.logger = logger or setup_logger(logger_name="QuantumLayer")
-        self.logger.info("QuantumLayer initialization with config: %s", config)
+        # Гіперпараметри схеми
+        self.n_qubits: int = int(n_qubits)
+        self.n_layers: int = int(n_layers)
+        self.topology: Topology = topology
+        self.encoding: str = str(encoding).lower()
+        self.reupload: bool = bool(reupload)
+        self.measurement: MeasurementKind | Sequence[str] = measurement
+        self.diff_method: Literal["parameter-shift", "best"] = diff_method
 
-        # Створюємо quantum device (через utils.py)
-        self.q_device = create_quantum_device(self.n_qubits, self.shots)
+        # Треновані параметри θ
+        theta = torch.empty(self.n_layers, self.n_qubits, dtype=dtype)
+        if param_seed is not None:
+            g = torch.Generator(device="cpu").manual_seed(int(param_seed))
+            nn.init.normal_(theta, mean=0.0, std=float(param_init_std), generator=g)
+        else:
+            nn.init.normal_(theta, mean=0.0, std=float(param_init_std))
+        self.theta: nn.Parameter = nn.Parameter(theta)
+        self._param_seed = param_seed
+        self._param_init_std = float(param_init_std)
 
-        # Ініціалізація параметрів θ як torch.nn.Parameter
-        self.theta = nn.Parameter(
-            torch.randn(self.n_layers, self.n_qubits, device=self.torch_device),
-            requires_grad=True
+        # DeviceSpec
+        self.spec: DeviceSpec = spec if spec is not None else DeviceSpec(
+            name=device_name, n_qubits=self.n_qubits, shots=shots, seed=seed
         )
 
-        # Ініціалізація квантової схеми (QNode)
-        self.qnode = qml.QNode(self.quantum_circuit, self.q_device, interface='torch')
+        self._qnode, self._meta = self._build_qnode()
+        self.logger.debug(
+            "Init QuantumLayer | n_qubits=%d, n_layers=%d, topology=%s, encoding=%s, reupload=%s, "
+            "measurement=%s, shots=%s, seed=%d, param_seed=%s, param_init_std=%.3f",
+            self.n_qubits, self.n_layers, self.topology, self.encoding, self.reupload,
+            str(self.spec.shots), self.spec.seed, str(self._param_seed), self._param_init_std
+        )
+        self.logger.debug("QNode meta: %s", self._meta)
 
-    def quantum_circuit(self, inputs, theta):
-        """
-        Квантова схема (QNode): кодування + ansatz + вимірювання.
+    @classmethod
+    def from_config(
+        cls,
+        cfg: Dict[str, Any],
+        *,
+        n_layers: Optional[int] = None,
+        topology: Topology = "ring",
+        encoding: EncodingKind | str = "ry",
+        reupload: bool = True,
+        measurement: MeasurementKind | Sequence[str] = "Z",
+        diff_method: Literal["parameter-shift", "best"] = "parameter-shift",
+        dtype: torch.dtype = torch.float32,
+        logger: Optional[logging.Logger] = None,
+    ) -> "QuantumLayer":
+        spec = spec_from_config(cfg)
+        n_qubits = int(spec.n_qubits)
+        L = int(n_layers if n_layers is not None else int(cfg.get("quantum", {}).get("n_layers", 2)))
+        proj_seed = int(cfg.get("project", {}).get("seed", 42))
+        return cls(
+            n_qubits=n_qubits,
+            n_layers=L,
+            topology=topology,
+            encoding=encoding,
+            reupload=reupload,
+            measurement=measurement,
+            diff_method=diff_method,
+            spec=spec,
+            dtype=dtype,
+            logger=logger,
+            param_seed=proj_seed
+        )
 
-        Args:
-            inputs (torch.Tensor): PCA-дані (n_qubits,)
-            theta (torch.Tensor): параметри квантового шару (n_layers × n_qubits)
+    def set_shots(self, shots: Optional[int]) -> None:
+        old = self.spec.shots
+        self.spec = with_shots(self.spec, shots)
+        self._qnode, self._meta = self._build_qnode()
+        self.logger.info("Switch shots: %s -> %s | meta=%s", str(old), str(shots), self._meta)
 
-        Returns:
-            List[expectation]: список expectation values з кубітів
-        """
-        # Перевірка розмірів
-        assert_shape(inputs, (self.n_qubits,))
-        assert_shape(theta, (self.n_layers, self.n_qubits))
+    def set_seed(self, seed: int) -> None:
+        old = self.spec.seed
+        self.spec = with_seed(self.spec, seed)
+        self._qnode, self._meta = self._build_qnode()
+        self.logger.info("Reseed device: %d -> %d | meta=%s", old, seed, self._meta)
 
-        # Quantum embedding PCA-даних у rotation gates
-        for idx, val in enumerate(inputs):
-            if self.encoding_type == 'Ry':
-                qml.RY(val, wires=idx)
-            elif self.encoding_type == 'Rx':
-                qml.RX(val, wires=idx)
-            elif self.encoding_type == 'Rz':
-                qml.RZ(val, wires=idx)
-            else:
-                raise ValueError(f"Unknown encoding type: {self.encoding_type}")
+    def rebuild_qnode(
+        self,
+        *,
+        topology: Optional[Topology] = None,
+        encoding: Optional[EncodingKind | str] = None,
+        reupload: Optional[bool] = None,
+        measurement: Optional[MeasurementKind | Sequence[str]] = None,
+        diff_method: Optional[Literal["parameter-shift", "best"]] = None,
+        spec: Optional[DeviceSpec] = None,
+    ) -> None:
+        if topology is not None:
+            self.topology = topology
+        if encoding is not None:
+            self.encoding = str(encoding).lower()
+        if reupload is not None:
+            self.reupload = bool(reupload)
+        if measurement is not None:
+            self.measurement = measurement
+        if diff_method is not None:
+            self.diff_method = diff_method
+        if spec is not None:
+            self.spec = spec
 
-        # Hardware-efficient ansatz
-        for layer in range(self.n_layers):
-            # Rotation block
-            for qubit in range(self.n_qubits):
-                qml.RY(theta[layer, qubit], wires=qubit)
+        self._qnode, self._meta = self._build_qnode()
+        self.logger.info("Rebuilt QNode | meta=%s", self._meta)
 
-            if self.topology == 'ring':
-                    for qubit in range(self.n_qubits - 1):
-                        qml.CNOT(wires=[qubit, qubit + 1])
-                    qml.CNOT(wires=[self.n_qubits - 1, 0])
-            elif self.topology == 'linear':
-                for qubit in range(self.n_qubits - 1):
-                    qml.CNOT(wires=[qubit, qubit + 1])
-            else:
-                raise ValueError(f"Unknown topology type: {self.topology}")
+    @property
+    def output_dim(self) -> int:
+        return int(self._meta.get("output_dim", self.n_qubits))
+
+    @property
+    def meta(self) -> Dict[str, Any]:
+        return dict(self._meta)
+
+    def forward(self, angles: torch.Tensor) -> torch.Tensor:
+        self._assert_input_shape(angles)
+        self.logger.debug(
+            "Forward | batch=%d, n_qubits=%d, output_dim=%d, shots=%s",
+            angles.shape[0], self.n_qubits, self.output_dim, str(self.spec.shots)
+        )
+
+        return batched_apply(self._qnode, angles, self.theta, logger=self.logger)
+    
+    def _build_qnode(self) -> Tuple[Any, Dict[str, Any]]:
+        qnode, meta = create_qnode(
+            spec=self.spec,
+            n_layers=self.n_layers,
+            topology=self.topology,
+            encoding=self.encoding,
+            reupload=self.reupload,
+            measurement=self.measurement,
+            diff_method=self.diff_method,
+            interface="torch",
+            encoding_kwargs=None,
+        )
+        return qnode, meta
+    
+    def _assert_input_shape(self, angles: torch.Tensor) -> None:
+        if not isinstance(angles, torch.Tensor):
+            raise TypeError(f"angles must be a torch.Tensor, got {type(angles)}.")
+        if angles.ndim != 2 or angles.shape[1] != self.n_qubits:
+            raise ValueError(
+                f"angles must have shape (B, n_qubits) with n_qubits={self.n_qubits}, "
+                f"got {tuple(angles.shape)}."
+            )
 
 
-        # Вимірювання expectation values (за замовчуванням PauliZ)
-        expvals = []
-        for qubit in range(self.n_qubits):
-            if self.measurement == 'PauliZ':
-                expvals.append(qml.expval(qml.PauliZ(qubit)))
-            elif self.measurement == 'PauliX':
-                expvals.append(qml.expval(qml.PauliX(qubit)))
-            elif self.measurement == 'PauliY':
-                expvals.append(qml.expval(qml.PauliY(qubit)))
-            else:
-                raise ValueError(f"Unknown measurement type: {self.measurement}")
-
-        return expvals
-
-    def forward(self, x_batch):
-        """
-        Forward-pass QuantumLayer для batch-обробки.
-
-        Args:
-            x_batch (torch.Tensor): batch PCA-даних (batch_size × n_qubits)
-
-        Returns:
-            torch.Tensor: expectation values (batch_size × n_qubits)
-        """
-        batch_size = x_batch.size(0)
-        self.logger.debug("QuantumLayer forward pass with batch size: %d", batch_size)
-
-        outputs = []
-        for idx in range(batch_size):
-            inputs = x_batch[idx]
-            expvals = self.qnode(inputs, self.theta)
-            expvals_tensor = expectation_to_tensor(expvals, device=self.torch_device)
-            outputs.append(expvals_tensor)
-
-        # Стекуємо результати в тензор (batch_size × n_qubits)
-        quantum_out = torch.stack(outputs)
-
-        # Перевіряємо розміри
-        assert_shape(quantum_out, (batch_size, self.n_qubits))
-
-        return quantum_out
+__all__ = ["QuantumLayer", "Topology", "EncodingKind", "MeasurementKind"]

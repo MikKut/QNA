@@ -317,3 +317,5 @@ if __name__ == "__main__":
     lo, hi = math.pi/3, 2*math.pi/3
     overall_live, _ = live_rate(PHI, lo=lo, hi=hi)
     print(f"[SMOKE] live_rate(φ in [{lo:.2f},{hi:.2f}]) overall={overall_live:.4f}")
+
+__all__ = ["PCScaler","AngleEncoder","encode_from_pca"]

@@ -59,7 +59,6 @@ training:
   lr: 0.001
   batch_size: 256
   epochs: 30
-  shots: 500
   grad_stats_interval: 100
   target_val_acc: 0.95
 
@@ -86,3 +85,11 @@ csv:
   delimiter: ";"       
   excel_sep_hint: true  
   utf8_bom: true      
+
+
+quantum:
+  device: default.qubit
+  shots: 100
+  n_layers: 2
+  topology: ring
+  reupload: true
