@@ -1,5 +1,6 @@
 {
   "python.envFile": "${workspaceFolder}/.env",
+  "git.useEditorAsCommitInput": false,
 
   "python.testing.pytestEnabled": true,
   "python.testing.unittestEnabled": false,
