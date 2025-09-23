@@ -585,3 +585,34 @@ AttributeError: 'AngleEncoder' object has no attribute 'transform'
 2025-09-23T19:24:39+0300 | INFO | qna | [PhiDataset] mode=val | N=10000, n_qubits=8, n_classes=10 | |phi|_min=-3.14159, |phi|_max=3.14159, |phi|_mean≈1.00464
 2025-09-23T19:24:39+0300 | INFO | qna | [PhiDataset] Розподіл класів: [987, 1124, 993, 1022, 974, 903, 986, 1044, 975, 992]
 2025-09-23T19:24:39+0300 | INFO | qna | [PhiDataset] φ clip-rate≈0.0093 (|φ| близько angle_max=3.14159), діапазон≈[-3.14159, 3.14159]
+2025-09-23T19:28:27+0300 | INFO | qna | Конфіг завантажено з: Code/config.yaml
+2025-09-23T19:28:27+0300 | INFO | qna | Конфіг | n_qubits=8 | n_layers=2 | topology=ring | enc=ry | meas=Z | device=default.qubit | shots=None | diff=parameter-shift
+2025-09-23T19:28:27+0300 | INFO | qna | Навчання | batch_size=2 | epochs=1 | lr=0.001 | grad_clip=1.00 | n_classes=10
+2025-09-23T19:28:27+0300 | INFO | qna | Дані    | train=./data/train_phi.npz | val=./data/val_phi.npz | angle_max=3.141592653589793 | k=2.5
+2025-09-23T19:28:27+0300 | INFO | qna | seed_everything: встановлено сид=42 (random/numpy/torch)
+2025-09-23T19:28:27+0300 | INFO | qna | Сіди через seed_everything(seed=42, deterministic_torch=False)
+2025-09-23T19:28:27+0300 | INFO | qna | Run name: EXP_20250923_192827_optadam_measz_encry_nq8_k25_L2_shotsnone
+2025-09-23T19:28:27+0300 | INFO | qna | Run dir:  ./runs\EXP_20250923_192827_optadam_measz_encry_nq8_k25_L2_shotsnone
+2025-09-23T19:28:27+0300 | INFO | qna | Збережено snapshot конфігу: ./runs\EXP_20250923_192827_optadam_measz_encry_nq8_k25_L2_shotsnone\config.snapshot.yaml
+2025-09-23T19:28:27+0300 | INFO | qna | Артефакти будуть у: ./runs\EXP_20250923_192827_optadam_measz_encry_nq8_k25_L2_shotsnone
+2025-09-23T19:28:27+0300 | INFO | qna | [PhiDataset] Інтерпретую './data/X_train_pca.npy' як директорію препроцесингу './data' (mode=train).
+2025-09-23T19:28:27+0300 | WARNING | qna | [PhiDataset] AngleEncoder: ігнорую невідомі kwargs: ['clip']; дозволені=['angle_max', 'k', 'no_clip']
+2025-09-23T19:28:27+0300 | INFO | qna | [PhiDataset] Побудовано φ з Z: AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793}) | φ∈[-3.142, 3.142], clip-rate≈0.98% | mode=train | cache=True
+2025-09-23T19:28:27+0300 | INFO | qna | [PhiDataset] mode=train | N=50000, n_qubits=8, n_classes=10 | |phi|_min=-3.14159, |phi|_max=3.14159, |phi|_mean≈1.00704
+2025-09-23T19:28:27+0300 | INFO | qna | [PhiDataset] Розподіл класів: [4936, 5618, 4965, 5109, 4868, 4518, 4932, 5221, 4876, 4957]
+2025-09-23T19:28:27+0300 | INFO | qna | [PhiDataset] φ clip-rate≈0.0098 (|φ| близько angle_max=3.14159), діапазон≈[-3.14159, 3.14159]
+2025-09-23T19:28:27+0300 | INFO | qna | [PhiDataset] Інтерпретую './data/X_val_pca.npy' як директорію препроцесингу './data' (mode=val).
+2025-09-23T19:28:27+0300 | WARNING | qna | [PhiDataset] AngleEncoder: ігнорую невідомі kwargs: ['clip']; дозволені=['angle_max', 'k', 'no_clip']
+2025-09-23T19:28:27+0300 | INFO | qna | [PhiDataset] Побудовано φ з Z: AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793}) | φ∈[-3.142, 3.142], clip-rate≈0.93% | mode=val | cache=True
+2025-09-23T19:28:27+0300 | INFO | qna | [PhiDataset] mode=val | N=10000, n_qubits=8, n_classes=10 | |phi|_min=-3.14159, |phi|_max=3.14159, |phi|_mean≈1.00464
+2025-09-23T19:28:27+0300 | INFO | qna | [PhiDataset] Розподіл класів: [987, 1124, 993, 1022, 974, 903, 986, 1044, 975, 992]
+2025-09-23T19:28:27+0300 | INFO | qna | [PhiDataset] φ clip-rate≈0.0093 (|φ| близько angle_max=3.14159), діапазон≈[-3.14159, 3.14159]
+2025-09-23T19:28:32+0300 | INFO | qna | [QuantumClassifier] n_qubits=8, out_dim=8, n_classes=10 | device=default.qubit, shots=None, layers=2, topology=ring, encoding=ry, meas=Z, diff=parameter-shift, reupload=True
+2025-09-23T19:28:36+0300 | INFO | qna | Reseed device: 42 -> 42 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 'Shots(total=None)', 'analytic': False}}
+2025-09-23T19:28:36+0300 | INFO | qna | [QuantumClassifier] param/device seed set to 42
+2025-09-23T19:28:36+0300 | INFO | qna | Reseed quantum device RNG → 42
+2025-09-23T19:28:41+0300 | WARNING | qna | [optim.registry] Ignoring unsupported kwargs for adam/optimizer: ['alpha', 'maximize', 'momentum', 'qna']
+2025-09-23T19:28:45+0300 | INFO | qna | [optim.registry] created optimizer 'adam' (groups=1) with keys=['amsgrad', 'betas', 'eps', 'lr', 'weight_decay']
+2025-09-23T19:28:45+0300 | INFO | qna | Оптимізатор з registry: adam
+2025-09-23T19:29:09+0300 | INFO | qna | Старт тренування: epochs=1, batch_size=2, grad_clip=1.00, shots=None
+2025-09-23T19:29:18+0300 | INFO | qna | qmetrics: {'phi/batch': 2.0, 'phi/n_qubits': 8.0, 'phi/min': -2.774914, 'phi/max': 1.450862, 'phi/mean': -0.463829, 'phi/std': 1.153379, 'phi/saturation_rate': 0.0, 'phi/live_rate': 0.3125, 'out/min': -0.357151, 'out/max': 0.087163, 'out/mean': -0.025769, 'out/std': 0.108479, 'out/numel': 16.0, 'theta/L': 2.0, 'theta/n_qubits': 8.0, 'theta/has_grad': 1.0, 'theta/grad_mean': 0.024411, 'theta/grad_std': 0.040832, 'theta/grad_max': 0.119774, 'theta/grad_l2': 0.19029, 'theta/grad.mean_abs': 0.036863, 'theta/grad.std_abs': 0.030071, 'theta/grad.l2': 0.19029, 'theta/grad.max_abs': 0.119774, 'theta/grad.zero_frac': 0.0}
