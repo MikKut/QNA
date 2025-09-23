@@ -1,7 +1,9 @@
 project:
-  name: "mnist_pca8_angle"
+  name: "QNA-QNN-MNIST"
   seed: 42
   output_root: "./runs"
+  deterministic_torch: false
+
 
 paths:
   data_root: "./data"
@@ -17,6 +19,21 @@ paths:
     train: "./data/Z_train_std.npy"
     val:   "./data/Z_val_std.npy"
     test:  "./data/Z_test_std.npy"
+
+data:
+  n_classes: 10
+  train_path: "./data/X_train_pca.npy"   # дефолт — існуючі PCA-файли
+  val_path:   "./data/X_val_pca.npy"
+  test_path:  "./data/X_test_pca.npy"
+
+  train_phi: "./data/train_phi.npz"   # {phi: (N,8), y: (N,)}
+  val_phi:   "./data/val_phi.npz"
+  test_phi:  "./data/test_phi.npz"
+
+angles:                     # використовується у тренуванні (онлайн)
+  k: 2.5
+  angle_max: 3.141592653589793
+  clip: true
 
 run:
   stage: "both"            # "preprocess" | "train" | "both"
@@ -49,18 +66,17 @@ scaler:                     # обирається на етапі fit (офла
   global:
     axis: "vector"
 
-angles:                     # використовується у тренуванні (онлайн)
-  k: 2.5
-  angle_max: 3.141592653589793
-  clip: true
-
 training:
   optimizer: "adam"        # "adam" | "qna_adam"
   lr: 0.001
-  batch_size: 256
-  epochs: 30
+  batch_size: 2 #256
+  epochs: 1 #30
   grad_stats_interval: 100
   target_val_acc: 0.95
+  weight_decay: 0.0
+  grad_clip: 1.0
+  accumulate_steps: 1
+  num_workers: 0
 
 diagnostics:
   prescreen_k: [1.5, 2.0, 2.5, 3.0, 3.5]
@@ -74,6 +90,7 @@ z_cache:
 
 logging:
   level: "INFO"
+  dir: "./runs"
   preprocess_log: "./runs/preproc/preprocess.log"
   train_log: "./runs/train/train.log"
 
@@ -86,10 +103,32 @@ csv:
   excel_sep_hint: true  
   utf8_bom: true      
 
-
 quantum:
-  device: default.qubit
-  shots: 100
+  device: "default.qubit"
+  shots: null #100                 # для аналітики: поставити null
   n_layers: 2
-  topology: ring
+  topology: "ring"
   reupload: true
+  encoding: "ry"           # ry|rx|rz|xy — узгоджено з QuantumLayer
+  measurements: "Z"        # "Z" | "ZX" | "ZXY"
+  diff_method: "parameter-shift"     # "adjoint" | "parameter-shift" | "finite-diff"
+  eval_shots: 1000 
+  reseed_each_epoch: false
+
+optim:
+  name: "adam"             # "adam" | "adamw" | "sgd" | "rmsprop" | "qna_adam"
+  lr: 0.001
+  weight_decay: 0.0
+  betas: [0.9, 0.999]
+  eps: 1.0e-8
+  amsgrad: false
+  maximize: false
+  qna:
+    clip_in_optimizer: false
+
+schedules:
+  shots:
+    mode: "none"              # "none" | "linear"
+    start: 50                 # значення на 1-й епосі
+    end: 500                  # значення на останній епосі
+    epochs: 20                # протягом скількох епох робити інтерполяцію

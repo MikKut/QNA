@@ -20,12 +20,26 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, List, Dict, Iterable, Mapping, Optional, Tuple, Union
 from pathlib import Path
-from collections.abc import Mapping, Sequence
-import dataclasses, enum, datetime as dt
+from collections.abc import Mapping
+import dataclasses, datetime
 import numpy as np
 import yaml
 import csv
 
+import os
+import time
+import random
+from typing import Optional
+
+try:
+    # наш проєктний логер
+    from Code.logger import setup_logger
+except Exception:  # fallback, якщо логер недоступний у момент імпорту
+    def setup_logger(name: str):
+        import logging
+        logging.basicConfig(level=logging.INFO)
+        return logging.getLogger(name)
+    
 # Опціональна підтримка torch (не обов'язково встановлений)
 try:
     import torch  # type: ignore
@@ -252,6 +266,76 @@ def set_seed(seed: int) -> None:
         except Exception:
             pass
 
+def seed_everything(
+    seed: Optional[int],
+    *,
+    deterministic_torch: bool = False,
+    logger=None,
+) -> int:
+    """
+    Виставляє сиди для random / numpy / torch (+CUDA, якщо доступно) і, за можливості,
+    для pennylane.numpy. Опційно вмикає детермінізм у PyTorch.
+
+    Args:
+        seed: Бажаний цілий сид. Якщо None — буде згенеровано.
+        deterministic_torch: Якщо True — вмикає torch.use_deterministic_algorithms(True)
+                             та відповідні флаги cudnn (корисно для детермінізму).
+        logger: Проєктний логер; якщо None — створиться локально.
+
+    Returns:
+        int: фактично використаний сид.
+    """
+    log = logger or setup_logger(__name__)
+
+    # 1) нормалізуємо seed
+    if seed is None:
+        # простий, але достатній генератор резервного сиду
+        seed = int(time.time_ns() % (2**31 - 1))
+        log.warning("seed_everything: seed=None → використано згенерований сид=%d", seed)
+    else:
+        try:
+            seed = int(seed)
+        except Exception as e:
+            raise ValueError(f"seed_everything: seed має бути int/None, отримано {seed!r}") from e
+
+    # 2) системні та інтерпретаторні сид-и
+    os.environ["PYTHONHASHSEED"] = str(seed)
+    random.seed(seed)
+    np.random.seed(seed)
+
+    # 3) torch (CPU/CUDA)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+
+    if deterministic_torch:
+        # У нашому проєкті ми працюємо на CPU (default.qubit), але хай буде опція:
+        try:
+            torch.use_deterministic_algorithms(True)
+        except Exception:
+            pass
+        try:
+            torch.backends.cudnn.deterministic = True  # type: ignore[attr-defined]
+            torch.backends.cudnn.benchmark = False     # type: ignore[attr-defined]
+        except Exception:
+            pass
+
+    # 4) pennylane.numpy (не критично, але корисно для узгодженості)
+    try:
+        from pennylane import numpy as pnp  # type: ignore
+        try:
+            pnp.random.seed(seed)
+        except Exception:
+            # у деяких версіях pnp це звичайний numpy-аліас і вже посіданий
+            pass
+    except Exception:
+        # PennyLane може бути ще не інстальовано/не потрібно у цьому контексті
+        pass
+
+    log.info("seed_everything: встановлено сид=%d (random/numpy/torch%s)", seed,
+             "/cudnn-deterministic" if deterministic_torch else "")
+
+    return seed
 
 # ---------- Fingerprint для артефактів ----------
 

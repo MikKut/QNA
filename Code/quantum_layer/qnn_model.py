@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from quantum_layer import QuantumLayer
+from Code.quantum_layer.quantum_layer import QuantumLayer
 from Code.logger import setup_logger
 
 class QNNModel(nn.Module):

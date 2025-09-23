@@ -7,7 +7,7 @@ import logging
 import torch
 import torch.nn as nn
 
-from Code.logger import setup_logger  # ← ваш кастомний логер
+from Code.logger import setup_logger
 from .devices import DeviceSpec, spec_from_config, with_seed, with_shots
 from .qnode_factory import create_qnode
 from Code.utils.tensor_utils import batched_apply

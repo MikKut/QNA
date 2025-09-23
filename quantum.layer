@@ -36,3 +36,20 @@
   1000 |     0.084533
 2025-09-03T03:31:44+0300 | INFO | qna | Reseed device: 777 -> 778 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 50}}
 2025-09-03T03:31:44+0300 | INFO | qna | Switch shots: 50 -> 200 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 200}}
+2025-09-10T03:20:06+0300 | INFO | qna | PROFILE | shots=  50 | batch=8 | n_qubits=8 | layers=2 | avg_time=0.070229 s
+2025-09-10T03:20:06+0300 | INFO | qna | PROFILE | shots= 100 | batch=8 | n_qubits=8 | layers=2 | avg_time=0.071704 s
+2025-09-10T03:20:07+0300 | INFO | qna | PROFILE | shots= 500 | batch=8 | n_qubits=8 | layers=2 | avg_time=0.076271 s
+2025-09-10T03:20:07+0300 | INFO | qna | PROFILE | shots=1000 | batch=8 | n_qubits=8 | layers=2 | avg_time=0.073044 s
+2025-09-10T03:20:07+0300 | INFO | qna | Switch shots: 50 -> 50 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 50, 'analytic': False}}
+2025-09-10T03:20:07+0300 | INFO | qna | Switch shots: 50 -> 100 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 100, 'analytic': False}}
+2025-09-10T03:20:08+0300 | INFO | qna | Switch shots: 100 -> 500 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 500, 'analytic': False}}
+2025-09-10T03:20:08+0300 | INFO | qna | Switch shots: 500 -> 1000 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 1000, 'analytic': False}}
+2025-09-10T03:20:08+0300 | INFO | qna | PROFILE SUMMARY
+ shots | avg_time (s)
+------------------------
+    50 |     0.066242
+   100 |     0.064679
+   500 |     0.064136
+  1000 |     0.064528
+2025-09-10T03:20:09+0300 | INFO | qna | Reseed device: 777 -> 778 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 50, 'analytic': False}}
+2025-09-10T03:20:09+0300 | INFO | qna | Switch shots: 50 -> 200 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 200, 'analytic': False}}

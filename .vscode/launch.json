@@ -13,6 +13,17 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "Train: quantum (script)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/Code/trainers/train_quantum.py",
+            "args": ["--config", "Code/config.yaml"],
+            "cwd": "${workspaceFolder}",
+            "env": { "PYTHONPATH": "${workspaceFolder}" },
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
       "name": "Run ACTIVE file as module",
       "type": "debugpy",
       "request": "launch",

@@ -1,8 +1,8 @@
 # test_quantum_layer_min.py
 import torch
 import torch.nn as nn
-from quantum_layer import QuantumLayer
-from logger import setup_logger
+from Code.quantum_layer.quantum_layer import QuantumLayer
+from Code.logger import setup_logger
 
 def main():
     logger = setup_logger(level=10)  # DEBUG

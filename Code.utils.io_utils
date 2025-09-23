@@ -1,0 +1,14 @@
+2025-09-23T11:42:02+0300 | INFO | qna | seed_everything: встановлено сид=42 (random/numpy/torch)
+2025-09-23T11:42:02+0300 | INFO | qna | Сіди виставлено через seed_everything(42)
+2025-09-23T11:42:02+0300 | INFO | qna | Збережено snapshot конфігу в ./runs\EXP_20250923_114202_k2.5_L2_shotsNone\config.snapshot.yaml
+2025-09-23T11:42:02+0300 | INFO | qna | Артефакти будуть у: ./runs\EXP_20250923_114202_k2.5_L2_shotsNone
+2025-09-23T11:42:02+0300 | ERROR | qna | Помилка під час тренування: [PhiDataset] Непідтримуваний формат: .npy (очікуємо .npz або .pt)
+Traceback (most recent call last):
+  File "D:\Code\QNA\QNA/Code/trainers/train_quantum.py", line 207, in main
+    train_ds = PhiDataset(config, mode="train", logger=logger)
+  File "D:\Code\QNA\QNA\Code\datasets\phi_dataset.py", line 80, in __init__
+    self._load_file(self.path, cache_in_memory=cache_in_memory)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Code\QNA\QNA\Code\datasets\phi_dataset.py", line 113, in _load_file
+    raise ValueError(f"[PhiDataset] Непідтримуваний формат: {ext} (очікуємо .npz або .pt)")
+ValueError: [PhiDataset] Непідтримуваний формат: .npy (очікуємо .npz або .pt)
