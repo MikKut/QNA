@@ -47,7 +47,7 @@ class DeviceSpec:
 
     Args:
         name:     назва backend'а (у нашому проєкті — "default.qubit")
-        n_qubits: кількість дротів (узгоджено з PCA/AngleEncoder)
+        n_qubits: кількість дротів
         shots:    None => аналітичний режим; або додатне ціле (кількість вимірювань)
         seed:     сид для відтворюваності вимірювань (device-level seed)
     """

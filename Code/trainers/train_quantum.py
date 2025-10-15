@@ -12,7 +12,6 @@ import time
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, Optional, Tuple, List
-
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
@@ -389,7 +388,16 @@ def _build_optimizer(cfg: Dict[str, Any], model: torch.nn.Module, logger) -> tor
     logger.info("Оптимізатор: %s (lr=%.3g, wd=%.2g, betas=%s, eps=%g, amsgrad=%s)", name, lr, wd, betas, eps, amsgrad)
     return opt
 
-
+def _fmt(x, fmt=".6f"):
+    """Робить 1,234 замість 1.234 з потрібною точністю."""
+    if x is None:
+        return ""
+    # цілі — як є
+    if isinstance(x, (int, np.integer)):
+        return str(int(x))
+    # інше → float з потрібним форматом
+    s = format(float(x), fmt)
+    return s.replace(".", ",")
 # --------------------------------- MAIN -----------------------------------
 
 def main(argv: Optional[list[str]] = None) -> int:
@@ -464,7 +472,8 @@ def main(argv: Optional[list[str]] = None) -> int:
 
         # CSV заголовок
         with open(run_paths.metrics_csv, "w", newline="", encoding="utf-8") as csv_file:
-            csv_writer = csv.writer(csv_file)
+            csv_file.write("sep=;\n")
+            csv_writer = csv.writer(csv_file, delimiter=";")
             csv_writer.writerow(
                 ["epoch", "step", "split", "loss", "acc",
                  "grad_norm_raw", "grad_norm", "clipped",
@@ -564,12 +573,17 @@ def main(argv: Optional[list[str]] = None) -> int:
                     for g in optimizer.param_groups:
                         lr_used = g.get("lr", None)
                         break
-                    csv_writer.writerow(
-                        [ep, step, "train",
-                         f"{loss.item():.6f}", f"{acc:.4f}",
-                         f"{gn_raw:.6f}", f"{gn:.6f}", clipped_flag,
-                         f"{(lr_used if lr_used is not None else '')}", current_shots, elapsed_ms]
-                    )
+                    csv_writer.writerow([
+                        ep, step, "train",
+                        _fmt(loss.item(), ".6f"),   # loss
+                        _fmt(acc, ".4f"),           # acc
+                        _fmt(gn_raw, ".6f"),        # grad_norm_raw
+                        _fmt(gn, ".6f"),            # grad_norm
+                        int(clipped_flag),          # clipped (ціле)
+                        (_fmt(lr_used, ".6g") if lr_used is not None else ""),  # lr
+                        (_fmt(current_shots, ".0f") if isinstance(current_shots, (int, float)) else (current_shots or "")),  # shots
+                        int(elapsed_ms),            # time_ms (ціле)
+                    ])
 
                 # Агрегати трену
                 train_loss = running_loss / max(steps, 1)
@@ -582,12 +596,17 @@ def main(argv: Optional[list[str]] = None) -> int:
                     "[Epoch %d] train: loss=%.4f, acc=%.3f, ‖∇‖raw=%.3f, ‖∇‖=%.3f, clip_rate=%.2f, shots=%s",
                     ep, train_loss, train_acc, train_gn_raw, train_gn, clip_rate, current_shots
                 )
-                csv_writer.writerow(
-                    [ep, "E", "train_epoch",
-                     f"{train_loss:.6f}", f"{train_acc:.4f}",
-                     f"{train_gn_raw:.6f}", f"{train_gn:.6f}", f"{clip_rate:.4f}",
-                     "", current_shots, "0"]
-                )
+                csv_writer.writerow([
+                    ep, "E", "train_epoch",
+                    _fmt(train_loss, ".6f"),
+                    _fmt(train_acc, ".4f"),
+                    _fmt(train_gn_raw, ".6f"),
+                    _fmt(train_gn, ".6f"),
+                    _fmt(clip_rate, ".4f"),
+                    "",                         # lr (немає)
+                    (_fmt(current_shots, ".0f") if isinstance(current_shots, (int, float)) else (current_shots or "")),
+                    0,
+                ])
                 csv_file.flush()
 
                 # ---- VAL (опційно) ----
@@ -610,12 +629,16 @@ def main(argv: Optional[list[str]] = None) -> int:
                         val_acc = v_running_acc / max(v_steps, 1)
                         logger.info("[Epoch %d]   val: loss=%.4f, acc=%.3f (eval_shots=%s)",
                                     ep, val_loss, val_acc, str(eval_shots) if eval_shots is not None else current_shots)
-                        csv_writer.writerow(
-                            [ep, "E", "val_epoch",
-                             f"{val_loss:.6f}", f"{val_acc:.4f}",
-                             "", "", "",
-                             "", str(eval_shots) if eval_shots is not None else current_shots, ""]
-                        )
+                        shots_val = eval_shots if eval_shots is not None else current_shots
+                        csv_writer.writerow([
+                            ep, "E", "val_epoch",
+                            _fmt(val_loss, ".6f"),
+                            _fmt(val_acc,  ".4f"),
+                            "", "", "",
+                            "",                       # lr
+                            _fmt(shots_val, ".0f"),   # shots
+                            ""                        # time_ms
+                        ])
                         csv_file.flush()
 
                         # Найкращий чекпойнт по val_loss

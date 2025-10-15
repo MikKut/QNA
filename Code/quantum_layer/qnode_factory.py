@@ -9,7 +9,7 @@ qnode_factory.py — фабрика QNode для PennyLane з інтерфейс
   • Повертає callable qnode(angles, theta) та meta-інформацію.
 
 Базова поведінка проєкту:
-  • encoding="ry", reupload=True, topology="ring", measurement="Z",
+  • encoding="ry", reupload=True, topology="ring", measurement="Z"/"ZX",
     diff_method="parameter-shift", interface="torch".
 
 Інтерфейси:
@@ -17,7 +17,11 @@ qnode_factory.py — фабрика QNode для PennyLane з інтерфейс
   theta:  torch.Tensor форми (L, n_qubits) — треновані параметри HEA
 
 Вихід:
-  torch.Tensor форми (n_meas * n_qubits,), де n_meas — кількість осей у measurement.
+  При measurement_mode="expval":
+      torch.Tensor форми (n_meas * n_qubits,)
+  При measurement_mode="expval_var":
+      torch.Tensor форми (2 * n_meas * n_qubits,)
+      (спершу всі expval у стандартному порядку, потім усі var у тому ж порядку)
 """
 
 from __future__ import annotations
@@ -29,7 +33,7 @@ import torch
 import pennylane as qml
 
 from .devices import DeviceSpec, make_device, device_summary
-from .encodings import encode_data, encode_data_reupload
+from .encodings import encode_data
 from .ansatz import hardware_efficient_layer
 from Code.logger import setup_logger
 logger = setup_logger("quantum.devices")
@@ -37,12 +41,7 @@ logger = setup_logger("quantum.devices")
 
 Topology = Literal["ring", "linear"]
 EncodingKind = Literal["ry", "rx", "rz", "xy"]
-
-# Допускаємо скорочені рядки вимірювання:
-#   "Z"   -> лише Z
-#   "ZX"  -> Z та X
-#   "ZXY" -> Z, X та Y
-# А також послідовність на кшталт ("Z","X") тощо.
+MeasurementMode = Literal["expval", "expval_var"]  # expval only, або expval+var за один виклик
 MeasurementKind = Literal["Z", "ZX", "ZXY"]
 
 
@@ -101,6 +100,28 @@ def _assert_shapes(angles: torch.Tensor, theta: torch.Tensor, n_layers_expected:
             % (n_layers_expected, n_qubits, tuple(theta.shape))
         )
 
+def _axis_to_obs(axis: str, wire: int) -> qml.operation.Operator:
+    """Відповідність осі Паулі до спостережуваного оператора PennyLane."""
+    if axis == "Z":
+        return qml.PauliZ(wire)
+    if axis == "X":
+        return qml.PauliX(wire)
+    if axis == "Y":
+        return qml.PauliY(wire)
+    raise RuntimeError(f"Unexpected axis '{axis}' in measurement.")
+
+def build_measurement_ops(axes: Tuple[str, ...], n_qubits: int) -> tuple[list, list]:
+    """
+    Побудувати впорядковані списки вимірювань для expval та var у стандартному порядку:
+      спочатку всі Z по дротах 0..n-1, потім X, потім Y.
+
+    Повертає:
+        exp_ops: [qml.expval(Pauli*), ...] довжини n_meas*n_qubits
+        var_ops: [qml.var(Pauli*),    ...] довжини n_meas*n_qubits (той самий порядок)
+    """
+    exp_ops = [qml.expval(_axis_to_obs(ax, i)) for ax in axes for i in range(n_qubits)]
+    var_ops = [qml.var(_axis_to_obs(ax, i)) for ax in axes for i in range(n_qubits)]
+    return exp_ops, var_ops
 
 # ----------------------------- Публічна фабрика ------------------------------ #
 
@@ -115,6 +136,7 @@ def create_qnode(
     diff_method: Literal["parameter-shift", "best"] = "parameter-shift",
     interface: Literal["torch"] = "torch",
     encoding_kwargs: Optional[Dict[str, Any]] = None,
+    measurement_mode: MeasurementMode = "expval"
 ) -> Tuple[Callable[[torch.Tensor, torch.Tensor], torch.Tensor], Dict[str, Any]]:
     """
     Створює QNode з інтерфейсом Torch для одно-зразкової схеми:
@@ -130,9 +152,11 @@ def create_qnode(
         diff_method:   'parameter-shift' (рекомендовано з shots) або 'best'
         interface:     лише 'torch' підтримується в цьому проєкті
         encoding_kwargs: додаткові параметри енкодера (напр., alpha для 'xy')
+        measurement_mode: "expval" (тільки середні) або "expval_var" (середні + дисперсії за один виклик)
 
     Returns:
-        qnode:  callable (angles: (n_qubits,), theta: (L,n_qubits)) -> torch.Tensor[(n_meas*n_qubits,)]
+        qnode:  callable (angles: (n_qubits,), theta: (L,n_qubits)) -> torch.Tensor[dim]
+               де dim = out_dim (для "expval") або 2*out_dim (для "expval_var")
         meta:   словник з довідковою інформацією (axes, output_dim, device info, тощо)
     """
     if n_layers <= 0:
@@ -143,6 +167,7 @@ def create_qnode(
     axes, n_meas = _normalize_measurement(measurement)
     n_qubits = spec.n_qubits
     out_dim = _expected_output_dim(n_qubits, n_meas)
+    want_var = (measurement_mode == "expval_var")
 
     dev = make_device(spec)
     dev_info = device_summary(dev)
@@ -171,23 +196,17 @@ def create_qnode(
 
         # Вимірювання: конкатенуємо expval по запитаних осях
         # Порядок: спершу всі Z по дротах, потім усі X, потім усі Y (як у axes).
-        results = []
-        for ax in axes:
-            if ax == "Z":
-                results.extend(qml.expval(qml.PauliZ(i)) for i in range(n_qubits))
-            elif ax == "X":
-                results.extend(qml.expval(qml.PauliX(i)) for i in range(n_qubits))
-            elif ax == "Y":
-                results.extend(qml.expval(qml.PauliY(i)) for i in range(n_qubits))
-            else:  # не має статись завдяки _normalize_measurement
-                raise RuntimeError(f"Unexpected axis '{ax}' in measurement.")
-
-        return results # Виникає тут
-
+        if want_var:
+            exp_ops, var_ops = build_measurement_ops(axes, n_qubits)
+            return [*exp_ops, *var_ops]
+            
+        return [qml.expval(_axis_to_obs(ax, i)) for ax in axes for i in range(n_qubits)]
+        
+    out_dim_total = out_dim * (2 if want_var else 1)
     meta: Dict[str, Any] = {
         "axes": axes,
         "n_meas": n_meas,
-        "output_dim": out_dim,
+        "output_dim": out_dim_total,
         "n_qubits": n_qubits,
         "n_layers": n_layers,
         "encoding": encoding,
@@ -195,6 +214,7 @@ def create_qnode(
         "topology": topology,
         "diff_method": diff_method,
         "device": dev_info,
+        "measurement_mode": measurement_mode,
     }
     logger.debug("QNode created: %s", meta)
 
@@ -209,5 +229,7 @@ __all__ = [
     "Topology",
     "EncodingKind",
     "MeasurementKind",
+    "MeasurementMode",
+    "build_measurement_ops",
     "create_qnode",
 ]

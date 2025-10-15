@@ -47,24 +47,22 @@ class QuantumClassifier(nn.Module):
         }
 
         # --- Створюємо квантовий шар ---
-        # Перевагаємо фабричний метод, якщо він є у твоїй реалізації.
         self.quantum: QuantumLayer
         if hasattr(QuantumLayer, "from_config") and callable(getattr(QuantumLayer, "from_config")):
             self.quantum = QuantumLayer.from_config(config, logger=self.logger)
         else:
-            # Узгоджено з твоїм описом API QuantumLayer
             self.quantum = QuantumLayer(
                 n_qubits=self.n_qubits,
                 n_layers=qcfg["n_layers"],
                 topology=qcfg["topology"],
                 encoding=qcfg["encoding"],
-                measurements=qcfg["measurements"],
-                device=qcfg["device"],
+                measurement=qcfg["measurements"],
+                device_name=qcfg["device"],
                 shots=qcfg["shots"],
                 diff_method=qcfg["diff_method"],
                 param_seed=qcfg["param_seed"],
                 reupload=qcfg["reupload"],
-                logger=self.logger
+                logger=self.logger,
             )
 
         # --- Визначаємо розмірність виходу квантового шару ---
@@ -76,6 +74,10 @@ class QuantumClassifier(nn.Module):
         # --- Класичний лінійний шар для логітів ---
         self.classifier = nn.Linear(self.quantum_out_dim, self.n_classes)
         self._init_classifier_weights(param_seed=self._cfg("project.seed", None))
+
+        self._last_phi: Optional[torch.Tensor] = None
+        self._last_expvals: Optional[torch.Tensor] = None
+        self._warned_no_shots: bool = False
 
         # Лог рядок-конфіг
         self.logger.info(
@@ -110,6 +112,19 @@ class QuantumClassifier(nn.Module):
             raise ValueError(
                 f"Expected phi of shape (B, {self.n_qubits}), got {tuple(phi.shape)}"
             )
+        
+        shots = self._cfg("quantum.shots", None)
+        if shots is None and not self._warned_no_shots:
+            self.logger.warning(
+                "[QuantumClassifier] quantum.shots is None (analytic mode). "
+                "Шум від шотів відсутній; DocPS/шум-орієнтований QNA не матиме ефекту."
+            )
+            self._warned_no_shots = True
+
+        self._last_phi = phi.detach()
+
+        # Основний квантовий forward
+        expvals: torch.Tensor = self.quantum(phi)
 
         expvals: torch.Tensor = self.quantum(phi)  # (B, out_dim)
         if expvals.dim() != 2 or expvals.size(1) != self.quantum_out_dim:
@@ -117,6 +132,7 @@ class QuantumClassifier(nn.Module):
                 f"QuantumLayer returned shape {tuple(expvals.shape)}; "
                 f"expected (B, {self.quantum_out_dim})."
             )
+        self._last_expvals = expvals
         logits = self.classifier(expvals)  # (B, n_classes)
         return logits
 
