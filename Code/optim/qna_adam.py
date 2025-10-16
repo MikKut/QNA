@@ -31,71 +31,14 @@ class QNAAdam(Optimizer):
 
       • (Опційно) глобальний L2 grad clipping усередині оптимізатора.
 
-    ⚠️ Важливо:
-      • Масштаб застосовується **до самого оновлення** (елемент-по-елементу),
-        а не вбудовується в `lr`: так ми підтримуємо пер-параметрне (навіть
-        пер-елементне) шкалування при збереженні формул Adam.
-      • Після `step()` одноразові шуми очищаються:
-          - `state[p]["qna_var_param"]` видаляється,
-          - `group[vtilde_key]` теж очищується.
-        Тренер має виставляти їх наново перед кожним кроком, щоб не було "протікання"
-        значень між кроками.
-
-    Параметри
-    ---------
-    params : iterable
-        Iterable параметрів або param_groups.
-    lr : float
-        Базовий learning rate (до шумового масштабу).
-    betas : Tuple[float, float]
-        EMA коефіцієнти для першого та другого моментів.
-    eps : float
-        Числова стабільність.
-    weight_decay : float
-        L2-регуляризація (класичний Adam, НЕ decoupled).
-    amsgrad : bool
-        Увімкнути AMSGrad.
-    maximize : bool
-        Якщо True — робити підйом (змінити знак градієнта).
-
-    --- QNA ---
-    lambda_var : float
-        Коефіцієнт штрафу шуму λ_var. 0 → QNA вимкнено.
-    lr_min_mult, lr_max_mult : float
-        Межі клеми для scale_λ.
-    vtilde_key : str
-        Ключ у param-group для групового Ṽ (скаляр), якщо немає пер-параметрного.
-
-    --- Внутрішній кліпінг (опційно) ---
-    clip_in_optimizer : bool
-        Якщо True — робимо глобальний L2 clip до кроку Adam.
-    max_norm : float
-        Межа L2-норми градієнта.
-    error_if_nonfinite : bool
-        Якщо True — кидати помилку при NaN/Inf нормі; інакше пропускати крок.
-    grad_eps : float
-        Епсилон у дільнику під час кліпінгу.
-
-    Як подавати Ṽ (document-style)
-    -------------------------------
-    • Після вимірювання шуму (Inline-DocPS) тренер може:
-        # пер-параметрно (рекомендовано):
-        optimizer.state[p]["qna_var_param"] = V_like_p  # shape як p, або скаляр
-        group["qna_mode"] = "param"
-        # бек-ап груповим:
-        group["qna_vtilde"] = float(Vparam.mean().item())
-
-        # або лише груповий:
-        group["qna_vtilde"] = float(Vtilde)
-        group["qna_mode"] = "group"
-
-    • Після step() оптимізатор автоматично очищає ці одноразові поля.
-
-    Сумісність із Adam
-    ------------------
-    Якщо λ_var = 0 і не задано Ṽ — це звичайний Adam (формули, bias-correction та AMSGrad
-    без змін). Для чесного порівняння з базою використовуйте однаковий гр. кліпінг, wd і
-    той самий спосіб обчислення градієнтів (у нас — Inline-DocPS).
+      •  Телеметрія масштабу/кроку в group["qna_stats"]:
+          {
+            "scale_mean", "scale_p90", "scale_min", "scale_max",
+            "scale_at_min_frac", "scale_at_max_frac",
+            "update_norm", "grad_norm", "cos_grad_update"
+          }
+        Значення агрегуються по всіх параметрах групи за крок.
+        (Тренеру зручно писати ці поля в CSV.)
     """
 
     def __init__(
@@ -284,9 +227,8 @@ class QNAAdam(Optimizer):
                 gv_t = self._make_tensor_like_param(gv, p.data)  # скаляр ок → розшириться
                 self._nan_to_num_(gv_t, 0.0)
                 scale = self._build_scale_from_var(gv_t, lam=lam, s_min=s_min, s_max=s_max)
-                # Якщо просили "param", але немає Vp — попереджаємо один раз на групу
+                # Якщо просили "param", але немає Vp — короткий debug:
                 if requested_mode.lower() == "param":
-                    # не засмічуємо логи — короткий debug:
                     logger.debug("[QNAAdam] qna_mode='param' but state[p]['qna_var_param'] missing; used 'group'.")
                 return scale, "group"
             except Exception as e:
@@ -298,7 +240,7 @@ class QNAAdam(Optimizer):
     # ------------------------------ API ------------------------------------
 
     def step(self, closure: Optional[Any] = None):
-        """Один крок оновлення (Adam + шум-адаптивний scale_λ, per-param коли є)."""
+        """Один крок оновлення (Adam + шум-адаптивний scale_λ, per-param коли є) + телеметрія."""
         loss = None
         if closure is not None:
             with torch.enable_grad():
@@ -326,6 +268,12 @@ class QNAAdam(Optimizer):
             weight_decay = float(group["weight_decay"])
             amsgrad = bool(group.get("amsgrad", False))
             maximize = bool(group.get("maximize", False))
+
+            # Агрегатори статистик по групі
+            scales_all: list[torch.Tensor] = []
+            update_sq_sum = 0.0
+            grad_sq_sum = 0.0
+            dot_gu = 0.0
 
             for p in group["params"]:
                 if p.grad is None:
@@ -377,14 +325,28 @@ class QNAAdam(Optimizer):
                 step_size = lr * math.sqrt(bias_c2) / bias_c1  # скаляр групи
 
                 # --- QNA масштаб (тензор) для цього параметра ---
-                scale_tensor, mode_used = self._get_scale_tensor(group, p)
+                scale_tensor, _mode_used = self._get_scale_tensor(group, p)
 
-                # --- застосувати оновлення Adam з пер-параметрним scale ---
-                # Базовий "градієнтний" крок (тензор)
+                # --- базовий "градієнтний" крок (тензор) ---
                 update = exp_avg / denom  # не модифікуємо exp_avg/denom місці
                 # Пер-елементне шум-адаптивне масштабування
                 update = update.mul(scale_tensor)
-                # Крок
+
+                # Телеметрія (агрегуємо по групі)
+                # Норми та косинусна близькість (рахуємо на float32 для стабільності)
+                u32 = update.to(torch.float32)
+                g32 = (grad if grad.is_floating_point() else grad.float())
+                update_sq_sum += float(torch.sum(u32 * u32).item())
+                grad_sq_sum += float(torch.sum(g32 * g32).item())
+                # dot(grad, update)
+                # Увага: якщо використано weight_decay, g тут уже з Wd — це ок для діагностики.
+                dot_gu += float(torch.sum(g32 * u32).item())
+
+                # Збираємо всі scale для статистики (може бути важкувато, але одноразово на крок прийнятно)
+                # Якщо це скаляр, розширений як тензор, flatten не коштує багато (view(-1) без копії).
+                scales_all.append(scale_tensor.detach().view(-1))
+
+                # Крок (застосовуємо оновлення)
                 p.data.add_(update, alpha=-step_size)
 
                 # Очистити одноразовий шум для цього параметра (не протікає на наступний step)
@@ -399,9 +361,59 @@ class QNAAdam(Optimizer):
                 except Exception:
                     pass
 
+            # --- Обчислити статистики масштабу/кроку по групі та покласти в group["qna_stats"] ---
+            try:
+                if scales_all:
+                    scales_cat = torch.cat(scales_all, dim=0)
+                    s_min = float(group.get("lr_min_mult", 0.0))
+                    s_max = float(group.get("lr_max_mult", 1.0))
+                    # базові
+                    scale_mean = float(scales_cat.mean().item())
+                    scale_min = float(scales_cat.min().item())
+                    scale_max = float(scales_cat.max().item())
+                    # p90 (обережно з малим числом елементів)
+                    if scales_cat.numel() >= 4:
+                        scale_p90 = float(torch.quantile(scales_cat, 0.90).item())
+                    else:
+                        scale_p90 = scale_max
+                    # частки на межах (із невеличким толерансом)
+                    tol = 1e-12
+                    at_min = (scales_cat <= (s_min + tol)).float().mean().item()
+                    at_max = (scales_cat >= (s_max - tol)).float().mean().item()
+                else:
+                    scale_mean = 1.0
+                    scale_min = 1.0
+                    scale_max = 1.0
+                    scale_p90 = 1.0
+                    at_min = 0.0
+                    at_max = 0.0
+
+                # Норми/косинус
+                update_norm = math.sqrt(max(update_sq_sum, 0.0))
+                grad_norm = math.sqrt(max(grad_sq_sum, 0.0))
+                denom = (update_norm * grad_norm) + 1e-12
+                cos_gu = float(dot_gu / denom) if denom > 0.0 else 0.0
+
+                group["qna_stats"] = {
+                    "scale_mean": scale_mean,
+                    "scale_p90": scale_p90,
+                    "scale_min": scale_min,
+                    "scale_max": scale_max,
+                    "scale_at_min_frac": float(at_min),
+                    "scale_at_max_frac": float(at_max),
+                    "update_norm": float(update_norm),
+                    "grad_norm": float(grad_norm),
+                    "cos_grad_update": cos_gu,
+                }
+            except Exception as e:
+                # Нічого критичного — просто попередимо і підемо далі
+                logger.debug("[QNAAdam] failed to compute qna_stats: %s", e)
+
             logger.debug(
-                "[QNAAdam] group step: lr=%.3g, amsgrad=%s, wd=%.2g, qna_mode=%s, lam=%.2e",
-                lr, amsgrad, weight_decay, str(group.get("qna_mode", "auto")), float(group.get("lambda_var", 0.0))
+                "[QNAAdam] group step: lr=%.3g, amsgrad=%s, wd=%.2g, lam=%.2e | scale_mean=%.4f p90=%.4f",
+                lr, amsgrad, weight_decay, float(group.get("lambda_var", 0.0)),
+                group.get("qna_stats", {}).get("scale_mean", 1.0),
+                group.get("qna_stats", {}).get("scale_p90", 1.0),
             )
 
         return loss

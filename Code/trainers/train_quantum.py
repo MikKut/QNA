@@ -533,6 +533,32 @@ def _push_qna_var_to_optimizer(optimizer: torch.optim.Optimizer, module: torch.n
             optimizer.state[p]["qna_var_param"] = V  # QNAAdam підхопить саме з state[p]
 
 
+def _extract_qna_stats_for_module(optimizer: torch.optim.Optimizer, module: torch.nn.Module) -> Dict[str, Any]:
+    """
+    Повертає group['qna_stats'] саме для тієї param-group, що містить параметри module (квантова група).
+    Якщо оптимізатор не QNAAdam або статистики немає — повертає порожній словник.
+    """
+    try:
+        if not isinstance(optimizer, QNAAdam):
+            return {}
+    except Exception:
+        return {}
+
+    qparams = set(p for p in module.parameters())
+    for g in optimizer.param_groups:
+        gparams = set(p for p in g.get("params", []))
+        if qparams & gparams:
+            stats = g.get("qna_stats", {}) or {}
+            # повертаємо лише очікувані ключі (щоб було стабільно у CSV)
+            allow = {
+                "scale_mean", "scale_p90", "scale_min", "scale_max",
+                "scale_at_min_frac", "scale_at_max_frac",
+                "update_norm", "grad_norm", "cos_grad_update"
+            }
+            return {k: stats.get(k, None) for k in allow}
+    return {}
+
+
 # --------------------------------- MAIN -----------------------------------
 
 def main(argv: Optional[list[str]] = None) -> int:
@@ -636,7 +662,12 @@ def main(argv: Optional[list[str]] = None) -> int:
             csv_writer.writerow(
                 ["epoch", "step", "split", "loss", "acc",
                  "grad_norm_raw", "grad_norm", "clipped",
-                 "lr", "shots", "Vtilde", "time_ms"]
+                 "lr", "shots", "Vtilde",
+                 # --- нове: QNA телеметрія (на рівні квантової групи) ---
+                 "scale_mean", "scale_p90", "scale_min", "scale_max",
+                 "scale_at_min", "scale_at_max",
+                 "upd_norm", "cos_gu",
+                 "time_ms"]
             )
             csv_file.flush()
 
@@ -674,6 +705,11 @@ def main(argv: Optional[list[str]] = None) -> int:
                 clip_count = 0
                 running_vt = 0.0
                 vt_batches = 0
+                # агрегати qna телеметрії
+                s_mean = s_p90 = s_min = s_max = 0.0
+                s_at_min = s_at_max = 0.0
+                upd_norm_acc = cos_gu_acc = 0.0
+
                 steps = 0
                 t0 = time.time()
 
@@ -716,21 +752,6 @@ def main(argv: Optional[list[str]] = None) -> int:
                     loss2 = criterion(logits2, yb)
                     loss2.backward()  # градієнти підуть тільки в classifier.*
 
-                    # (Легкі) квантові метрики — лише на 1-му батчі епохи (за наявності містка)
-                    if _HAS_Q_METRICS and step == 1:
-                        try:
-                            with torch.no_grad():
-                                expvals_dbg = model.quantum(xb)  # (B, out_dim)  # type: ignore[attr-defined]
-                            q_metrics = merge_dicts(
-                                compute_phi_metrics(xb, angle_max=float(config.get("angles", {}).get("angle_max", math.pi))),
-                                compute_expval_metrics(expvals_dbg),
-                                compute_theta_grad_metrics(getattr(model.quantum, "theta", None)),  # type: ignore[attr-defined]
-                            )
-                            safe_qm = {k: (round(float(v), 6) if isinstance(v, (int, float)) else v) for k, v in q_metrics.items()}
-                            logger.info("qmetrics: %s", safe_qm)
-                        except Exception:
-                            pass
-
                     # Норма ∇ ДО кліпінгу
                     gn_raw = _grad_norm(model.parameters())
                     clipped_flag = 0
@@ -741,10 +762,13 @@ def main(argv: Optional[list[str]] = None) -> int:
 
                     optimizer.step()
 
+                    # Після step: зчитуємо qna-статистику саме для квантової групи
+                    qstats = _extract_qna_stats_for_module(optimizer, model.quantum)  # type: ignore[attr-defined]
                     # Норма ∇ ПІСЛЯ кліпінгу (для інформації)
                     gn = _grad_norm(model.parameters())
                     acc = _accuracy_from_logits(logits, yb)
 
+                    # Акумулятори
                     running_loss += float(loss.item())
                     running_acc += acc
                     running_gn_raw += gn_raw
@@ -753,6 +777,17 @@ def main(argv: Optional[list[str]] = None) -> int:
                     if Vtilde is not None:
                         running_vt += float(Vtilde)
                         vt_batches += 1
+
+                    # qna агрегати (якщо є)
+                    if qstats:
+                        s_mean   += float(qstats.get("scale_mean") or 0.0)
+                        s_p90    += float(qstats.get("scale_p90") or 1.0)
+                        s_min    += float(qstats.get("scale_min") or 1.0)
+                        s_max    += float(qstats.get("scale_max") or 1.0)
+                        s_at_min += float(qstats.get("scale_at_min_frac") or 0.0)
+                        s_at_max += float(qstats.get("scale_at_max_frac") or 0.0)
+                        upd_norm_acc += float(qstats.get("update_norm") or 0.0)
+                        cos_gu_acc   += float(qstats.get("cos_grad_update") or 0.0)
 
                     # CSV по батчах
                     elapsed_ms = int((time.time() - t0) * 1000)
@@ -771,6 +806,15 @@ def main(argv: Optional[list[str]] = None) -> int:
                         (_fmt(lr_used, ".6g") if lr_used is not None else ""),  # lr
                         (_fmt(current_shots, ".0f") if isinstance(current_shots, (int, float)) else (current_shots or "")),  # shots
                         (_fmt(Vtilde, ".3e") if Vtilde is not None else ""),
+                        # qna stats (квантова група) — можуть бути порожні якщо не QNAAdam
+                        _fmt(qstats.get("scale_mean") if qstats else None, ".4f"),
+                        _fmt(qstats.get("scale_p90")  if qstats else None, ".4f"),
+                        _fmt(qstats.get("scale_min")  if qstats else None, ".4f"),
+                        _fmt(qstats.get("scale_max")  if qstats else None, ".4f"),
+                        _fmt(qstats.get("scale_at_min_frac") if qstats else None, ".4f"),
+                        _fmt(qstats.get("scale_at_max_frac") if qstats else None, ".4f"),
+                        _fmt(qstats.get("update_norm") if qstats else None, ".6f"),
+                        _fmt(qstats.get("cos_grad_update") if qstats else None, ".4f"),
                         int(elapsed_ms),            # time_ms (ціле)
                     ])
 
@@ -781,12 +825,28 @@ def main(argv: Optional[list[str]] = None) -> int:
                 train_gn = running_gn / max(steps, 1)
                 clip_rate = clip_count / max(steps, 1)
                 vt_epoch = (running_vt / vt_batches) if vt_batches > 0 else None
+
+                # усереднення qna-метрик по батчах
+                if steps > 0:
+                    s_mean_e   = s_mean / steps
+                    s_p90_e    = s_p90 / steps
+                    s_min_e    = s_min / steps
+                    s_max_e    = s_max / steps
+                    s_at_min_e = s_at_min / steps
+                    s_at_max_e = s_at_max / steps
+                    upd_norm_e = upd_norm_acc / steps
+                    cos_gu_e   = cos_gu_acc / steps
+                else:
+                    s_mean_e = s_p90_e = s_min_e = s_max_e = s_at_min_e = s_at_max_e = upd_norm_e = cos_gu_e = None
+
                 current_shots = str(_get_current_shots(model))
                 logger.info(
-                    "[Epoch %d] train: loss=%.4f, acc=%.3f, ‖∇‖raw=%.3f, ‖∇‖=%.3f, clip_rate=%.2f, V~=%s, shots=%s",
+                    "[Epoch %d] train: loss=%.4f, acc=%.3f, ‖∇‖raw=%.3f, ‖∇‖=%.3f, clip_rate=%.2f, V~=%s, shots=%s | scale_mean=%.3f p90=%.3f",
                     ep, train_loss, train_acc, train_gn_raw, train_gn, clip_rate,
                     (f"{vt_epoch:.3e}" if vt_epoch is not None else "—"),
-                    current_shots
+                    current_shots,
+                    (s_mean_e if s_mean_e is not None else float("nan")),
+                    (s_p90_e if s_p90_e is not None else float("nan")),
                 )
                 csv_writer.writerow([
                     ep, "E", "train_epoch",
@@ -798,6 +858,14 @@ def main(argv: Optional[list[str]] = None) -> int:
                     "",                         # lr (немає)
                     (_fmt(current_shots, ".0f") if isinstance(current_shots, (int, float)) else (current_shots or "")),
                     (_fmt(vt_epoch, ".3e") if vt_epoch is not None else ""),
+                    _fmt(s_mean_e, ".4f"),
+                    _fmt(s_p90_e,  ".4f"),
+                    _fmt(s_min_e,  ".4f"),
+                    _fmt(s_max_e,  ".4f"),
+                    _fmt(s_at_min_e, ".4f"),
+                    _fmt(s_at_max_e, ".4f"),
+                    _fmt(upd_norm_e, ".6f"),
+                    _fmt(cos_gu_e, ".4f"),
                     0,
                 ])
                 csv_file.flush()
@@ -834,7 +902,7 @@ def main(argv: Optional[list[str]] = None) -> int:
                             "",                       # lr
                             _fmt(shots_val, ".0f"),   # shots
                             "",                       # Vtilde
-                            ""                        # time_ms
+                            "", "", "", "", "", "", "", "",  # заповнювачі для qna-колонок + time_ms
                         ])
                         csv_file.flush()
 
