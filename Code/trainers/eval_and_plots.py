@@ -1,4 +1,4 @@
-# Code/scripts/eval_and_plots.py
+# Code/trainers/eval_and_plots.py
 # -*- coding: utf-8 -*-
 from __future__ import annotations
 
