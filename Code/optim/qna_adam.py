@@ -13,61 +13,89 @@ logger = setup_logger("qnaadam")
 
 
 class QNAAdam(Optimizer):
-    """
-    QNAAdam — це звичайний Adam із додатковим шум-адаптивним масштабуванням кроку.
+    r"""
+    QNAAdam — Adam з шум-адаптивним масштабуванням кроку (document-style).
 
-    Базові формули оновлення — як у torch.optim.Adam (включно з bias-correction
-    та AMSGrad). Єдина відмінність: перед застосуванням кроку ми множимо базовий
-    lr групи на scale_λ, де
+    ✅ Що додає відносно torch.optim.Adam:
+      • Масштабування оновлення кожного параметра елемент-по-елементу за формулою
+            scale_λ = 1 / (1 + λ_var · Ṽ)
+        де Ṽ — оцінка дисперсії shot-noise. Масштаб клемиться у
+        [lr_min_mult, lr_max_mult].
 
-        scale_λ = 1 / (1 + lambda_var * Vtilde),   клемимо в [lr_min_mult, lr_max_mult].
+      • Два рівні джерела Ṽ:
+          1) **Per-param (рекомендовано):** тренер кладе для кожного `p`
+             `optimizer.state[p]["qna_var_param"] = V_like_p` (shape як у `p.data`
+             або скаляр). Це чесно відповідає формулі «для кожного параметра θᵢ».
+          2) **Group:** якщо для `p` немає `state[p]["qna_var_param"]`, беремо
+             скаляр `group[vtilde_key]` (напр., середнє по параметрах на зонді).
 
-    Значення Vtilde очікується в param-group під ключем `vtilde_key` (за замовчуванням
-    "qna_vtilde"), яке тренер виставляє після вимірювання шуму (Inline-DocPS).
+      • (Опційно) глобальний L2 grad clipping усередині оптимізатора.
 
-    Додатково (опційно) є внутрішній глобальний L2 grad clipping (clip_in_optimizer).
+    ⚠️ Важливо:
+      • Масштаб застосовується **до самого оновлення** (елемент-по-елементу),
+        а не вбудовується в `lr`: так ми підтримуємо пер-параметрне (навіть
+        пер-елементне) шкалування при збереженні формул Adam.
+      • Після `step()` одноразові шуми очищаються:
+          - `state[p]["qna_var_param"]` видаляється,
+          - `group[vtilde_key]` теж очищується.
+        Тренер має виставляти їх наново перед кожним кроком, щоб не було "протікання"
+        значень між кроками.
 
     Параметри
     ---------
     params : iterable
-        Список параметрів або param_groups як у torch.optim.
+        Iterable параметрів або param_groups.
     lr : float
-        Базова швидкість навчання.
+        Базовий learning rate (до шумового масштабу).
     betas : Tuple[float, float]
-        Коефіцієнти EMA для першого та другого моментів.
+        EMA коефіцієнти для першого та другого моментів.
     eps : float
-        Малий термін для числової стабільності.
+        Числова стабільність.
     weight_decay : float
-        L2-регуляризація (звичайний Adam, НЕ decoupled).
+        L2-регуляризація (класичний Adam, НЕ decoupled).
     amsgrad : bool
-        Якщо True, використовуємо AMSGrad-випуклення.
+        Увімкнути AMSGrad.
     maximize : bool
-        Якщо True, робимо градієнтний підйом (змінюємо знак града).
+        Якщо True — робити підйом (змінити знак градієнта).
 
-    --- QNA-специфічні ---
+    --- QNA ---
     lambda_var : float
-        Коефіцієнт штрафу шуму. 0 → вимкнути.
+        Коефіцієнт штрафу шуму λ_var. 0 → QNA вимкнено.
     lr_min_mult, lr_max_mult : float
-        Межі для scale_λ.
+        Межі клеми для scale_λ.
     vtilde_key : str
-        Ім'я ключа у param-group, звідки брати Vtilde (наприклад, "qna_vtilde").
+        Ключ у param-group для групового Ṽ (скаляр), якщо немає пер-параметрного.
 
-    --- Кліпінг усередині оптимізатора (опційно) ---
+    --- Внутрішній кліпінг (опційно) ---
     clip_in_optimizer : bool
-        Якщо True — виконується глобальний L2 clipping до Adam-кроку.
+        Якщо True — робимо глобальний L2 clip до кроку Adam.
     max_norm : float
         Межа L2-норми градієнта.
     error_if_nonfinite : bool
-        Якщо True — кидати помилку при NaN/Inf у нормі; інакше пропускати крок.
+        Якщо True — кидати помилку при NaN/Inf нормі; інакше пропускати крок.
     grad_eps : float
-        Епсилон у дільнику при масштабуванні під час кліпінгу.
+        Епсилон у дільнику під час кліпінгу.
 
-    Зауваження
-    ----------
-    • Якщо param-group не має ключа `vtilde_key`, вважаємо Vtilde=0 → scale_λ=1,
-      і така група оновлюється ідентично до звичайного Adam.
-    • Щоб порівняння з Adam було чесним, тримайте однакові гіперпараметри і спосіб
-      отримання градієнтів; QNAAdam лише масштабує крок для “квантової” групи.
+    Як подавати Ṽ (document-style)
+    -------------------------------
+    • Після вимірювання шуму (Inline-DocPS) тренер може:
+        # пер-параметрно (рекомендовано):
+        optimizer.state[p]["qna_var_param"] = V_like_p  # shape як p, або скаляр
+        group["qna_mode"] = "param"
+        # бек-ап груповим:
+        group["qna_vtilde"] = float(Vparam.mean().item())
+
+        # або лише груповий:
+        group["qna_vtilde"] = float(Vtilde)
+        group["qna_mode"] = "group"
+
+    • Після step() оптимізатор автоматично очищає ці одноразові поля.
+
+    Сумісність із Adam
+    ------------------
+    Якщо λ_var = 0 і не задано Ṽ — це звичайний Adam (формули, bias-correction та AMSGrad
+    без змін). Для чесного порівняння з базою використовуйте однаковий гр. кліпінг, wd і
+    той самий спосіб обчислення градієнтів (у нас — Inline-DocPS).
     """
 
     def __init__(
@@ -132,7 +160,6 @@ class QNAAdam(Optimizer):
         if self._logged_once:
             return
         self._logged_once = True
-
         try:
             any_clip = any(g.get("clip_in_optimizer", False) for g in self.param_groups)
             max_norms = sorted(set(float(g.get("max_norm", 1.0)) for g in self.param_groups))
@@ -142,7 +169,6 @@ class QNAAdam(Optimizer):
             lrmins = sorted(set(float(g.get("lr_min_mult", 0.0)) for g in self.param_groups))
             lrmaxs = sorted(set(float(g.get("lr_max_mult", 1.0)) for g in self.param_groups))
             keys = sorted(set(str(g.get("vtilde_key", "qna_vtilde")) for g in self.param_groups))
-
             logger.info(
                 "[QNAAdam] options: clip_in_optimizer=%s | max_norm=%s | error_if_nonfinite=%s "
                 "| grad_eps=%s | lambda_var=%s | lr_min_mult=%s | lr_max_mult=%s | vtilde_key(s)=%s",
@@ -162,18 +188,15 @@ class QNAAdam(Optimizer):
             for p in group["params"]:
                 if p.grad is None:
                     continue
-                # Норму рахуємо у float32 для стабільності (без переходу в float64).
                 g = p.grad.detach()
                 if g.numel() == 0:
                     continue
                 total_sq += float((g.to(torch.float32) ** 2).sum().item())
 
         if not math.isfinite(total_sq):
-            # Некоректна сума квадратів → далі поведінка залежно від прапора
             return False, float("nan")
 
         total_norm = math.sqrt(max(total_sq, 0.0))
-        # Знайдемо межі/eps (беремо найменший grad_eps, найбільший max_norm серед груп)
         max_norm = max(float(g.get("max_norm", 1.0)) for g in self.param_groups)
         grad_eps = min(float(g.get("grad_eps", 1e-6)) for g in self.param_groups)
 
@@ -189,28 +212,93 @@ class QNAAdam(Optimizer):
         return False, total_norm
 
     @staticmethod
-    def _scale_from_vtilde(group: Dict[str, Any]) -> Tuple[float, float]:
+    def _nan_to_num_(t: torch.Tensor, value_for_nan: float = 0.0) -> torch.Tensor:
+        """In-place: NaN→value_for_nan, ±Inf→clamped (Inf → very large, treated by clamp later)."""
+        return torch.nan_to_num_(t, nan=value_for_nan)
+
+    @staticmethod
+    def _make_tensor_like_param(src: Any, like: torch.Tensor) -> torch.Tensor:
+        """
+        Перенесе src (float|Tensor) на девайс/dtype 'like'. Допускає скаляр або
+        той самий шейп; якщо шейп відрізняється і не скаляр — кидає помилку.
+        """
+        if isinstance(src, torch.Tensor):
+            t = src.to(device=like.device, dtype=like.dtype, copy=False)
+            if t.numel() == 1:
+                return t.expand_as(like)
+            if t.shape == like.shape:
+                return t
+            raise ValueError(
+                f"qna_var_param tensor must be scalar or same shape as param: got {tuple(t.shape)} vs {tuple(like.shape)}"
+            )
+        else:
+            # трактуємо як скаляр
+            return torch.as_tensor(src, device=like.device, dtype=like.dtype).expand_as(like)
+
+    @staticmethod
+    def _build_scale_from_var(V: torch.Tensor, *, lam: float, s_min: float, s_max: float) -> torch.Tensor:
+        """
+        Повертає тензор масштабу: 1 / (1 + lam * clamp(V, min=0)), із клемою [s_min, s_max].
+        """
+        V_ = torch.clamp(V, min=0.0)
+        scale = torch.reciprocal(1.0 + float(lam) * V_)
+        if s_min > 0.0 or s_max < float("inf"):
+            scale = torch.clamp(scale, min=float(s_min), max=float(s_max))
+        return scale
+
+    def _get_scale_tensor(self, group: Dict[str, Any], p: torch.nn.Parameter) -> Tuple[torch.Tensor, str]:
+        """
+        Повертає (scale_tensor, mode_used) для параметра p:
+          • "param": використано state[p]["qna_var_param"] (тензор/скаляр)
+          • "group": використано скаляр group[vtilde_key]
+          • "off":   λ_var <= 0 або Ṽ відсутній → тензор з одиниць
+        """
         lam = float(group.get("lambda_var", 0.0))
         if lam <= 0.0:
-            return 1.0, 0.0
+            return torch.ones_like(p.data), "off"
 
-        key = str(group.get("vtilde_key", "qna_vtilde"))
-        vtilde = float(group.get(key, 0.0) or 0.0)
-
-        scale = 1.0 / (1.0 + lam * vtilde)
-        # клема:
         s_min = float(group.get("lr_min_mult", 0.0))
         s_max = float(group.get("lr_max_mult", 1.0))
-        if scale < s_min:
-            scale = s_min
-        if scale > s_max:
-            scale = s_max
-        return float(scale), float(vtilde)
+        key = str(group.get("vtilde_key", "qna_vtilde"))
+        requested_mode = str(group.get("qna_mode", "") or "")
+
+        # 1) пер-параметрний шлях через state[p]
+        st = self.state[p]
+        Vp = st.get("qna_var_param", None)
+        if Vp is not None:
+            try:
+                V_like = self._make_tensor_like_param(Vp, p.data)  # broadcast/shape check
+            except Exception as e:
+                logger.warning("[QNAAdam] invalid qna_var_param for param '%s': %s → fallback to group/off",
+                               p.__class__.__name__, e)
+                Vp = None
+            else:
+                self._nan_to_num_(V_like, 0.0)
+                scale = self._build_scale_from_var(V_like, lam=lam, s_min=s_min, s_max=s_max)
+                return scale, "param"
+
+        # 2) груповий шлях
+        gv = group.get(key, None)
+        if gv is not None:
+            try:
+                gv_t = self._make_tensor_like_param(gv, p.data)  # скаляр ок → розшириться
+                self._nan_to_num_(gv_t, 0.0)
+                scale = self._build_scale_from_var(gv_t, lam=lam, s_min=s_min, s_max=s_max)
+                # Якщо просили "param", але немає Vp — попереджаємо один раз на групу
+                if requested_mode.lower() == "param":
+                    # не засмічуємо логи — короткий debug:
+                    logger.debug("[QNAAdam] qna_mode='param' but state[p]['qna_var_param'] missing; used 'group'.")
+                return scale, "group"
+            except Exception as e:
+                logger.warning("[QNAAdam] invalid group vtilde '%s': %s → fallback off", key, e)
+
+        # 3) вимкнено/немає даних
+        return torch.ones_like(p.data), "off"
 
     # ------------------------------ API ------------------------------------
 
     def step(self, closure: Optional[Any] = None):
-        """Виконує один крок оновлення параметрів (Adam + шумовий scale_λ)."""
+        """Один крок оновлення (Adam + шум-адаптивний scale_λ, per-param коли є)."""
         loss = None
         if closure is not None:
             with torch.enable_grad():
@@ -229,8 +317,8 @@ class QNAAdam(Optimizer):
                     raise RuntimeError("QNAAdam: non-finite gradient norm (inf or NaN).")
                 logger.warning("QNAAdam: non-finite gradient norm — skipping step.")
                 return loss
-            # Якщо просто відбулось масштабування — йдемо далі (короткий лог уже є).
 
+        # --- Головний цикл оновлення ---
         for group in self.param_groups:
             lr = float(group["lr"])
             beta1, beta2 = group["betas"]
@@ -239,11 +327,6 @@ class QNAAdam(Optimizer):
             amsgrad = bool(group.get("amsgrad", False))
             maximize = bool(group.get("maximize", False))
 
-            # Визначаємо ефективний lr із шумовим масштабом
-            scale, vtilde = self._scale_from_vtilde(group)
-            lr_eff = lr * scale
-
-            # Оновлення параметрів — стандартний Adam
             for p in group["params"]:
                 if p.grad is None:
                     continue
@@ -251,14 +334,14 @@ class QNAAdam(Optimizer):
                 if grad.is_sparse:
                     raise RuntimeError("QNAAdam does not support sparse gradients")
 
+                # gradient ascent?
                 if maximize:
                     grad = -grad
 
-                # Ініціалізація стану
+                # --- state init ---
                 state = self.state[p]
                 if len(state) == 0:
                     state["step"] = 0
-                    # Зберігаємо стани у dtype/пристрої параметра
                     state["exp_avg"] = torch.zeros_like(p.data)
                     state["exp_avg_sq"] = torch.zeros_like(p.data)
                     if amsgrad:
@@ -267,44 +350,58 @@ class QNAAdam(Optimizer):
                 exp_avg: torch.Tensor = state["exp_avg"]
                 exp_avg_sq: torch.Tensor = state["exp_avg_sq"]
 
-                state["step"] += 1
-                step_t = state["step"]
-
-                # weight decay (L2) як у Adam
+                # weight decay (L2) — як у класичному Adam
                 if weight_decay != 0.0:
                     grad = grad.add(p.data, alpha=weight_decay)
 
-                # EMA моментів
+                # --- моментні оновлення ---
                 exp_avg.mul_(beta1).add_(grad, alpha=1.0 - beta1)
                 exp_avg_sq.mul_(beta2).addcmul_(grad, grad, value=1.0 - beta2)
 
                 if amsgrad:
-                    max_exp_avg_sq: torch.Tensor = state.get("max_exp_avg_sq")
                     if "max_exp_avg_sq" not in state:
-                        max_exp_avg_sq = torch.zeros_like(exp_avg_sq)
-                        state["max_exp_avg_sq"] = max_exp_avg_sq
-                    else:
-                        # узгодження dtype/device
-                        state["max_exp_avg_sq"] = state["max_exp_avg_sq"].to(exp_avg_sq.dtype).to(exp_avg_sq.device)
-                        max_exp_avg_sq = state["max_exp_avg_sq"]
-
+                        state["max_exp_avg_sq"] = torch.zeros_like(exp_avg_sq)
+                    # узгодити dtype/device на випадок переносів
+                    state["max_exp_avg_sq"] = state["max_exp_avg_sq"].to(exp_avg_sq.dtype).to(exp_avg_sq.device)
+                    max_exp_avg_sq: torch.Tensor = state["max_exp_avg_sq"]
                     torch.maximum(max_exp_avg_sq, exp_avg_sq, out=max_exp_avg_sq)
                     denom = max_exp_avg_sq.sqrt().add_(eps)
                 else:
                     denom = exp_avg_sq.sqrt().add_(eps)
 
-                # Bias-correction
+                # Bias correction
+                state["step"] += 1
+                step_t = state["step"]
                 bias_c1 = 1.0 - beta1 ** step_t
                 bias_c2 = 1.0 - beta2 ** step_t
-                step_size = lr_eff * math.sqrt(bias_c2) / bias_c1
+                step_size = lr * math.sqrt(bias_c2) / bias_c1  # скаляр групи
 
-                # Оновлення параметра
-                p.data.addcdiv_(exp_avg, denom, value=-step_size)
+                # --- QNA масштаб (тензор) для цього параметра ---
+                scale_tensor, mode_used = self._get_scale_tensor(group, p)
 
-            # Невеликий лог для прозорості (раз на крок — норм)
+                # --- застосувати оновлення Adam з пер-параметрним scale ---
+                # Базовий "градієнтний" крок (тензор)
+                update = exp_avg / denom  # не модифікуємо exp_avg/denom місці
+                # Пер-елементне шум-адаптивне масштабування
+                update = update.mul(scale_tensor)
+                # Крок
+                p.data.add_(update, alpha=-step_size)
+
+                # Очистити одноразовий шум для цього параметра (не протікає на наступний step)
+                if "qna_var_param" in state:
+                    state.pop("qna_var_param", None)
+
+            # Після групи: очистити груповий vtilde (він одноразовий)
+            key = str(group.get("vtilde_key", "qna_vtilde"))
+            if key in group:
+                try:
+                    group.pop(key, None)
+                except Exception:
+                    pass
+
             logger.debug(
-                "[QNAAdam] group step: lr=%.3g, scale=%.4f, Vtilde=%.3e, amsgrad=%s, wd=%.2g",
-                lr, scale, vtilde, amsgrad, weight_decay
+                "[QNAAdam] group step: lr=%.3g, amsgrad=%s, wd=%.2g, qna_mode=%s, lam=%.2e",
+                lr, amsgrad, weight_decay, str(group.get("qna_mode", "auto")), float(group.get("lambda_var", 0.0))
             )
 
         return loss

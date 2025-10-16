@@ -77,6 +77,23 @@ training:
   grad_clip: 1.0
   accumulate_steps: 1
   num_workers: 0
+  early_stopping:
+    enable: true
+    monitor: "val_loss"   # "val_loss" або "val_acc"
+    mode: "min"           # "min" для loss, "max" для acc
+    patience: 5
+    min_delta: 0.0        # наскільки має покращитись метрика, щоб «зафіксувати покращення»
+    warmup_epochs: 0      # скільки епох ігнорувати bad-epochs на старті
+    restore_best: true    # зберігати/залишати найкращу модель (у нас і так зберігаємо)
+  inline_docps:
+    enabled: true
+    shift: 1.5707963267948966   # π/2
+    reduce_var: "param"         # "param" | "global"
+    stats_seed_offset: 0        # 0 → той самий сид, але окремий QNode (незалежний RNG-трек)
+    subset:
+      mode: "all"               # "all" | "random" | "topk"
+      ratio: 1.0                # для "random": частка параметрів; для "topk": верхня частка за |∂L/∂E|
+      min_params: 0   
 
 diagnostics:
   prescreen_k: [1.5, 2.0, 2.5, 3.0, 3.5]
@@ -93,10 +110,15 @@ logging:
   dir: "./runs"
   preprocess_log: "./runs/preproc/preprocess.log"
   train_log: "./runs/train/train.log"
+  qna:
+    log_each_step: false          # true → писати Ṽ/scale у CSV на кожному кроці (повільніше)
+    log_each_epoch: true          # true → агрегати за епоху
+    csv_metrics: "./runs/train/qna_metrics.csv"
 
 safety:
   overwrite: true
   assert_no_nan: true
+  require_finite_shots: true 
 
 csv:
   delimiter: ";"       
@@ -112,19 +134,29 @@ quantum:
   encoding: "ry"           # ry|rx|rz|xy — символи узгоджені з QuantumLayer, але не функціонал
   measurements: "ZX"        # "Z" | "ZX" | "ZXY" (оскільки поки у нас тільки ry - поки не має сенсу)
   diff_method: "parameter-shift"     # "adjoint" | "parameter-shift" | "finite-diff"
-  eval_shots: 1000 
+  eval_shots: 2048 
   reseed_each_epoch: false
 
 optim:
-  name: "adam"             # "adam" | "adamw" | "sgd" | "rmsprop" | "qna_adam"
+  name: "qna_adam"                # один і той самий оптимізатор для обох прогонів
   lr: 3.0e-4
-  weight_decay: 0.0
+  weight_decay: 0.0               # це Adam (L2), НЕ AdamW
   betas: [0.9, 0.999]
   eps: 1.0e-8
   amsgrad: false
   maximize: false
+  # --- QNA-специфіка ---
   qna:
-    clip_in_optimizer: false
+    lambda_var: 0.0 #1.0e-3       # >0.0 → QNA-Adam; =0.0 → «класичний Adam» (для baseline)
+    lr_min_mult: 0.10             # нижня межа масштабування (не стискаємо крок безмежно)
+    lr_max_mult: 1.0              # не збільшуємо понад базовий lr
+    mode: "param"                 # "param" (пер-параметрне масштабування) | "global"
+    vtilde_key: "qna_vtilde"      # для global-варіанту (якщо колись знадобиться)
+    state_key: "qna_var_param"    # ключ у state[p] для Var_i (пер-параметрна логіка)
+    clip_in_optimizer: false      # за потреби перевести кліпінг сюди, а training.grad_clip → 0.0
+    max_norm: 1.0
+    error_if_nonfinite: false
+    grad_eps: 1.0e-6
 
 schedules:
   shots:

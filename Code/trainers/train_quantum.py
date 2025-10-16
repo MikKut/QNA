@@ -9,9 +9,11 @@ import math
 import os
 import sys
 import time
+import copy
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, Optional, Tuple, List
+
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
@@ -33,6 +35,14 @@ try:
     from Code.optim.registry import get_optimizer as get_opt_from_registry  # type: ignore
 except Exception:
     get_opt_from_registry = None
+
+# Прямий імпорт QNAAdam як fallback, якщо реєстру нема
+try:
+    from Code.optim.qna_adam import QNAAdam  # type: ignore
+    _HAS_QNA = True
+except Exception:
+    QNAAdam = None  # type: ignore
+    _HAS_QNA = False
 
 # Опційні квантові метрики (міст до angle_metrics)
 try:
@@ -58,6 +68,77 @@ class RunPaths:
     profiler_json: str  # JSON Lines (.jsonl)
     exp_name: str
     optimizer: str
+
+
+class EarlyStopper:
+    """
+    Проста рання зупинка.
+      monitor: 'val_loss' (mode='min') або 'val_acc' (mode='max')
+      patience: скільки епох без покращення терпіти
+      min_delta: мінімальний зсув, щоб вважати покращенням
+      warmup_epochs: скільки епох не перевіряти критерій
+      restore_best: відкотити найкращий state_dict моделі
+    """
+    def __init__(
+        self,
+        monitor: str = "val_loss",
+        mode: str = "min",
+        patience: int = 5,
+        min_delta: float = 0.0,
+        warmup_epochs: int = 0,
+        restore_best: bool = True,
+        logger=None,
+    ) -> None:
+        assert mode in ("min", "max")
+        self.monitor = monitor
+        self.mode = mode
+        self.patience = int(patience)
+        self.min_delta = float(min_delta)
+        self.warmup_epochs = int(warmup_epochs)
+        self.restore_best = bool(restore_best)
+        self.logger = logger or setup_logger("earlystop")
+
+        self.best_value: Optional[float] = None
+        self.best_state: Optional[Dict[str, Any]] = None
+        self.bad_epochs: int = 0
+
+    def _is_better(self, value: float) -> bool:
+        if self.best_value is None:
+            return True
+        if self.mode == "min":
+            return value < (self.best_value - self.min_delta)
+        else:
+            return value > (self.best_value + self.min_delta)
+
+    def step(self, value: float, epoch: int, model: torch.nn.Module) -> bool:
+        # теплий старт
+        if epoch <= self.warmup_epochs:
+            return False
+        if self.best_value is None or self._is_better(value):
+            self.best_value = float(value)
+            self.bad_epochs = 0
+            if self.restore_best:
+                # робимо легкий deepcopy state_dict
+                self.best_state = copy.deepcopy(model.state_dict())
+            if self.logger:
+                self.logger.info("[EarlyStop] Новий найкращий %s = %.6f на епосі %d",
+                                 self.monitor, self.best_value, epoch)
+            return False
+        else:
+            self.bad_epochs += 1
+            if self.logger:
+                self.logger.info("[EarlyStop] Немає покращення (%d/%d), поточне=%.6f, найкраще=%.6f",
+                                 self.bad_epochs, self.patience, float(value), float(self.best_value))
+            if self.bad_epochs >= self.patience:
+                if self.restore_best and self.best_state is not None:
+                    try:
+                        model.load_state_dict(self.best_state)
+                        if self.logger:
+                            self.logger.info("[EarlyStop] Відновлено найкращий стейт моделі.")
+                    except Exception:
+                        pass
+                return True
+            return False
 
 
 # --------------------------- Утиліти/допоміжні ----------------------------
@@ -230,7 +311,7 @@ def _log_config_summary(cfg: Dict[str, Any], logger) -> None:
         q.get("measurements", q.get("measurement", "Z")),
         q.get("device", "default.qubit"),
         str(q.get("shots", None)),
-        q.get("diff_method", "adjoint"),
+        q.get("diff_method", "parameter-shift"),
     )
     logger.info(
         "Навчання | batch_size=%s | epochs=%s | lr=%s | grad_clip=%.2f | n_classes=%s",
@@ -296,7 +377,6 @@ def _build_loaders(cfg: Dict[str, Any], seed: int, logger) -> Tuple[DataLoader, 
     num_workers = int(cfg.get("training", {}).get("num_workers", 0))
 
     train_ds = PhiDataset(cfg, mode="train", logger=logger)
-    val_path = cfg.get("data", {}).get("val_phi") or cfg.get("data", {}).get("val_path")
     val_ds = PhiDataset(cfg, mode="val", logger=logger)
 
     # Детермінізм для shuffle та воркерів
@@ -323,6 +403,12 @@ def _build_loaders(cfg: Dict[str, Any], seed: int, logger) -> Tuple[DataLoader, 
         generator=g,
         persistent_workers=(num_workers > 0),
     ) if val_ds is not None else None
+
+    # Лог розмірів
+    try:
+        logger.info("Train size: %d | Val size: %s", len(train_ds), (len(val_ds) if val_ds is not None else "—"))
+    except Exception:
+        pass
 
     return train_loader, val_loader
 
@@ -365,6 +451,7 @@ def _build_optimizer(cfg: Dict[str, Any], model: torch.nn.Module, logger) -> tor
         if k not in {"name", "lr", "weight_decay", "betas", "eps", "amsgrad", "maximize", "lrs"}
     }
 
+    # Спроба через registry
     if get_opt_from_registry is not None:
         opt = get_opt_from_registry(
             name=name,
@@ -380,13 +467,36 @@ def _build_optimizer(cfg: Dict[str, Any], model: torch.nn.Module, logger) -> tor
         logger.info("Оптимізатор з registry: %s", name)
         return opt
 
-    # Вбудовані варіанти
+    # Вбудовані варіанти (fallback)
+    if name in ("qna_adam", "qnaadam") and _HAS_QNA:
+        qna = optim_cfg.get("qna", {}) or {}
+        opt = QNAAdam(
+            pg,
+            lr=lr,
+            weight_decay=wd,
+            betas=betas,
+            eps=eps,
+            amsgrad=amsgrad,
+            maximize=maximize,
+            lambda_var=float(qna.get("lambda_var", 0.0)),
+            lr_min_mult=float(qna.get("lr_min_mult", 0.0)),
+            lr_max_mult=float(qna.get("lr_max_mult", 1.0)),
+            vtilde_key=str(qna.get("vtilde_key", "qna_vtilde")),
+            clip_in_optimizer=bool(qna.get("clip_in_optimizer", False)),
+            max_norm=float(qna.get("max_norm", 1.0)),
+            error_if_nonfinite=bool(qna.get("error_if_nonfinite", False)),
+            grad_eps=float(qna.get("grad_eps", 1e-6)),
+        )
+        logger.info("Оптимізатор: QNAAdam (lr=%.3g, wd=%.2g, betas=%s, eps=%g, amsgrad=%s)", lr, wd, betas, eps, amsgrad)
+        return opt
+
     if name in ("adamw",):
         opt = torch.optim.AdamW(pg, lr=lr, weight_decay=wd, betas=betas, eps=eps, amsgrad=amsgrad, maximize=maximize)
     else:
         opt = torch.optim.Adam(pg, lr=lr, weight_decay=wd, betas=betas, eps=eps, amsgrad=amsgrad, maximize=maximize)
     logger.info("Оптимізатор: %s (lr=%.3g, wd=%.2g, betas=%s, eps=%g, amsgrad=%s)", name, lr, wd, betas, eps, amsgrad)
     return opt
+
 
 def _fmt(x, fmt=".6f"):
     """Робить 1,234 замість 1.234 з потрібною точністю."""
@@ -398,10 +508,35 @@ def _fmt(x, fmt=".6f"):
     # інше → float з потрібним форматом
     s = format(float(x), fmt)
     return s.replace(".", ",")
+
+
+def _push_qna_var_to_optimizer(optimizer: torch.optim.Optimizer, module: torch.nn.Module, var_param: torch.Tensor, logger) -> None:
+    """
+    Кладе пер-параметрний шум V у state[p]["qna_var_param"] для ПАРАМЕТРІВ модуля.
+    Очікуємо, що основний тренований параметр QuantumLayer — це theta форми (L, n_qubits),
+    і var_param має ту ж форму. Якщо форма не збігається — робимо обережний fallback (mean).
+    """
+    if var_param is None:
+        return
+    with torch.no_grad():
+        for p in module.parameters():
+            V = var_param.to(dtype=p.dtype, device=p.device, copy=False)
+            if V.shape != p.shape:
+                # fallback — повідомляємо та даємо середнє (не ідеально, але не валимо ран)
+                try:
+                    vmean = float(V.mean().item())
+                except Exception:
+                    vmean = 0.0
+                V = torch.full_like(p, vmean)
+                logger.warning("QNA: var_param.shape %s != param.shape %s — використовую mean=%.3e як fallback.",
+                               tuple(var_param.shape), tuple(p.shape), vmean)
+            optimizer.state[p]["qna_var_param"] = V  # QNAAdam підхопить саме з state[p]
+
+
 # --------------------------------- MAIN -----------------------------------
 
 def main(argv: Optional[list[str]] = None) -> int:
-    parser = argparse.ArgumentParser(description="Train quantum classifier (PennyLane + Torch)")
+    parser = argparse.ArgumentParser(description="Train quantum classifier (PennyLane + Torch, Inline-DocPS + QNA)")
     parser.add_argument(
         "--config",
         type=str,
@@ -422,10 +557,9 @@ def main(argv: Optional[list[str]] = None) -> int:
 
         # Визначаємо фактичне ім'я оптимізатора для тега ран-а
         requested_opt = str(config.get("optim", {}).get("name", "adam")).lower()
-        if get_opt_from_registry is None and requested_opt not in ("adam", "adamw"):
+        resolved_opt = requested_opt
+        if get_opt_from_registry is None and requested_opt not in ("adam", "adamw", "qna_adam", "qnaadam"):
             resolved_opt = "adam"
-        else:
-            resolved_opt = requested_opt
 
         # Папка запуску та snapshot конфігу
         run_paths = _prepare_run_dir(config, override_opt_name=resolved_opt)
@@ -445,14 +579,39 @@ def main(argv: Optional[list[str]] = None) -> int:
         optimizer = _build_optimizer(config, model, logger)
         criterion = torch.nn.CrossEntropyLoss()
 
-        # Grad clipping
+        # Grad clipping (зовнішній). Якщо в QNAAdam увімкнений внутрішній — зовнішній OFF.
         grad_clip = float(config.get("training", {}).get("grad_clip", 1.0))
-        # Якщо оптимізатор кліпить всередині (QNA-Adam) — вимикаємо зовнішній кліпінг
-        name_norm = "".join(ch for ch in requested_opt if ch.isalnum())
-        clip_in_opt = bool(config.get("optim", {}).get("qna", {}).get("clip_in_optimizer", False))
-        if name_norm in ("qnaadam",) and clip_in_opt:
+        qna_clip_inside = False
+        if isinstance(optimizer, QNAAdam) and getattr(optimizer, "param_groups", None):
+            # зчитуємо будь-яку групу — якщо десь увімкнено, вважаємо "всередині"
+            qna_clip_inside = any(bool(g.get("clip_in_optimizer", False)) for g in optimizer.param_groups)
+        if qna_clip_inside:
             grad_clip = 0.0
-            logger.info("Grad clipping: external OFF (handled inside optimizer).")
+            logger.info("Grad clipping: external OFF (обробляється усередині QNAAdam).")
+
+        # Early Stopping
+        es_cfg = (config.get("training", {}).get("early_stopping", {}) or {})
+        es_enabled = bool(es_cfg.get("enabled", False)) and (val_loader is not None)
+        if es_enabled:
+            monitor = str(es_cfg.get("monitor", "val_loss")).lower()
+            mode = "min" if "loss" in monitor else str(es_cfg.get("mode", "max")).lower()
+            patience = int(es_cfg.get("patience", 5))
+            min_delta = float(es_cfg.get("min_delta", 0.0))
+            warmup = int(es_cfg.get("warmup_epochs", 0))
+            restore_best = bool(es_cfg.get("restore_best", True))
+            stopper = EarlyStopper(monitor=monitor, mode=mode, patience=patience,
+                                   min_delta=min_delta, warmup_epochs=warmup,
+                                   restore_best=restore_best, logger=logger)
+            logger.info("EarlyStopping: enabled | monitor=%s | mode=%s | patience=%d | min_delta=%.3g | warmup=%d | restore_best=%s",
+                        monitor, mode, patience, min_delta, warmup, restore_best)
+        else:
+            stopper = None
+            if not es_cfg:
+                logger.info("EarlyStopping: disabled (no config).")
+            elif val_loader is None:
+                logger.info("EarlyStopping: disabled (немає валідації).")
+            else:
+                logger.info("EarlyStopping: disabled (enabled=false).")
 
         # Shot-annealing / eval_shots
         schedules = config.get("schedules", {})
@@ -477,13 +636,14 @@ def main(argv: Optional[list[str]] = None) -> int:
             csv_writer.writerow(
                 ["epoch", "step", "split", "loss", "acc",
                  "grad_norm_raw", "grad_norm", "clipped",
-                 "lr", "shots", "time_ms"]
+                 "lr", "shots", "Vtilde", "time_ms"]
             )
             csv_file.flush()
 
             # Тренувальний цикл
             epochs = int(config.get("training", {}).get("epochs", 20))
             best_val = float("inf")
+            best_val_acc = 0.0
             save_every = int(config.get("logging", {}).get("save_every_epochs", 0))
 
             logger.info(
@@ -512,13 +672,18 @@ def main(argv: Optional[list[str]] = None) -> int:
                 running_loss = running_acc = 0.0
                 running_gn_raw = running_gn = 0.0
                 clip_count = 0
+                running_vt = 0.0
+                vt_batches = 0
                 steps = 0
                 t0 = time.time()
 
                 for step, (xb, yb) in enumerate(train_loader, start=1):
                     steps += 1
                     optimizer.zero_grad(set_to_none=True)
-                    logits = model(xb)
+
+                    # 1) Forward: квант → голова
+                    expvals = model.quantum(xb)                       # (B, out_dim), requires_grad=True
+                    logits = model.classifier(expvals)                # (B, n_classes)
                     loss = criterion(logits, yb)
 
                     # Guard від не-фінтних лоссів
@@ -527,20 +692,40 @@ def main(argv: Optional[list[str]] = None) -> int:
                         optimizer.zero_grad(set_to_none=True)
                         continue
 
-                    loss.backward()
+                    # 2) ∂L/∂E — без глобального backward
+                    dL_dE = torch.autograd.grad(loss, expvals, retain_graph=False, create_graph=False)[0]
+
+                    # 3) Inline-DocPS: заповнити theta.grad і отримати пер-параметрний шум
+                    doc = model.quantum.backward_inline_docps(
+                        xb, dL_dE,
+                        reduce_var="param",  # для QNA потрібен пер-параметрний
+                    )
+                    Vtilde = doc.get("Vtilde", None)
+                    var_param = doc.get("var_param", None)
+
+                    # 4) Передати пер-параметрний шум у QNAAdam (через state[p])
+                    if isinstance(optimizer, QNAAdam) and var_param is not None:
+                        try:
+                            _push_qna_var_to_optimizer(optimizer, model.quantum, var_param, logger)  # type: ignore[attr-defined]
+                        except Exception as e:
+                            logger.warning("Не вдалось push var_param у QNAAdam: %s", e)
+
+                    # 5) Класична голова: відсікаємо квантову гілку, backward лише в голову
+                    expvals_detached = expvals.detach()
+                    logits2 = model.classifier(expvals_detached)
+                    loss2 = criterion(logits2, yb)
+                    loss2.backward()  # градієнти підуть тільки в classifier.*
 
                     # (Легкі) квантові метрики — лише на 1-му батчі епохи (за наявності містка)
                     if _HAS_Q_METRICS and step == 1:
                         try:
                             with torch.no_grad():
-                                expvals = model.quantum(xb)  # (B, out_dim)  # type: ignore[attr-defined]
+                                expvals_dbg = model.quantum(xb)  # (B, out_dim)  # type: ignore[attr-defined]
                             q_metrics = merge_dicts(
                                 compute_phi_metrics(xb, angle_max=float(config.get("angles", {}).get("angle_max", math.pi))),
-                                compute_expval_metrics(expvals),
-                                # Якщо у шарі параметри називаються інакше — блок спрацює під try/except
+                                compute_expval_metrics(expvals_dbg),
                                 compute_theta_grad_metrics(getattr(model.quantum, "theta", None)),  # type: ignore[attr-defined]
                             )
-                            # Акуратно округляємо числові значення
                             safe_qm = {k: (round(float(v), 6) if isinstance(v, (int, float)) else v) for k, v in q_metrics.items()}
                             logger.info("qmetrics: %s", safe_qm)
                         except Exception:
@@ -565,6 +750,9 @@ def main(argv: Optional[list[str]] = None) -> int:
                     running_gn_raw += gn_raw
                     running_gn += gn
                     clip_count += clipped_flag
+                    if Vtilde is not None:
+                        running_vt += float(Vtilde)
+                        vt_batches += 1
 
                     # CSV по батчах
                     elapsed_ms = int((time.time() - t0) * 1000)
@@ -582,6 +770,7 @@ def main(argv: Optional[list[str]] = None) -> int:
                         int(clipped_flag),          # clipped (ціле)
                         (_fmt(lr_used, ".6g") if lr_used is not None else ""),  # lr
                         (_fmt(current_shots, ".0f") if isinstance(current_shots, (int, float)) else (current_shots or "")),  # shots
+                        (_fmt(Vtilde, ".3e") if Vtilde is not None else ""),
                         int(elapsed_ms),            # time_ms (ціле)
                     ])
 
@@ -591,10 +780,13 @@ def main(argv: Optional[list[str]] = None) -> int:
                 train_gn_raw = running_gn_raw / max(steps, 1)
                 train_gn = running_gn / max(steps, 1)
                 clip_rate = clip_count / max(steps, 1)
+                vt_epoch = (running_vt / vt_batches) if vt_batches > 0 else None
                 current_shots = str(_get_current_shots(model))
                 logger.info(
-                    "[Epoch %d] train: loss=%.4f, acc=%.3f, ‖∇‖raw=%.3f, ‖∇‖=%.3f, clip_rate=%.2f, shots=%s",
-                    ep, train_loss, train_acc, train_gn_raw, train_gn, clip_rate, current_shots
+                    "[Epoch %d] train: loss=%.4f, acc=%.3f, ‖∇‖raw=%.3f, ‖∇‖=%.3f, clip_rate=%.2f, V~=%s, shots=%s",
+                    ep, train_loss, train_acc, train_gn_raw, train_gn, clip_rate,
+                    (f"{vt_epoch:.3e}" if vt_epoch is not None else "—"),
+                    current_shots
                 )
                 csv_writer.writerow([
                     ep, "E", "train_epoch",
@@ -605,11 +797,14 @@ def main(argv: Optional[list[str]] = None) -> int:
                     _fmt(clip_rate, ".4f"),
                     "",                         # lr (немає)
                     (_fmt(current_shots, ".0f") if isinstance(current_shots, (int, float)) else (current_shots or "")),
+                    (_fmt(vt_epoch, ".3e") if vt_epoch is not None else ""),
                     0,
                 ])
                 csv_file.flush()
 
                 # ---- VAL (опційно) ----
+                val_loss = None
+                val_acc = None
                 if val_loader is not None:
                     original_shots = _get_current_shots(model)
                     try:
@@ -620,10 +815,11 @@ def main(argv: Optional[list[str]] = None) -> int:
                         v_running_loss, v_running_acc, v_steps = 0.0, 0.0, 0
                         with torch.no_grad():
                             for xb, yb in val_loader:
-                                logits = model(xb)
-                                loss = criterion(logits, yb)
-                                v_running_loss += float(loss.item())
-                                v_running_acc += _accuracy_from_logits(logits, yb)
+                                expvals_v = model.quantum(xb)
+                                logits_v = model.classifier(expvals_v)
+                                loss_v = criterion(logits_v, yb)
+                                v_running_loss += float(loss_v.item())
+                                v_running_acc += _accuracy_from_logits(logits_v, yb)
                                 v_steps += 1
                         val_loss = v_running_loss / max(v_steps, 1)
                         val_acc = v_running_acc / max(v_steps, 1)
@@ -637,15 +833,26 @@ def main(argv: Optional[list[str]] = None) -> int:
                             "", "", "",
                             "",                       # lr
                             _fmt(shots_val, ".0f"),   # shots
+                            "",                       # Vtilde
                             ""                        # time_ms
                         ])
                         csv_file.flush()
 
-                        # Найкращий чекпойнт по val_loss
+                        # Найкращий чекпойнт по val_loss (для зворотної сумісності)
                         if val_loss < best_val:
                             best_val = val_loss
                             torch.save(model.state_dict(), run_paths.model_pt)
                             logger.info("Збережено найкращу модель (val_loss=%.6f) → %s", best_val, run_paths.model_pt)
+
+                        # Early stopping (якщо увімкнено)
+                        if stopper is not None:
+                            monitor_value = float(val_loss) if (stopper.monitor == "val_loss") else float(val_acc)
+                            if stopper.step(monitor_value, ep, model):
+                                logger.info("Early stopping спрацював на епосі %d.", ep)
+                                # Після відновлення best_state — збережемо модель
+                                torch.save(model.state_dict(), run_paths.model_pt)
+                                break
+
                     finally:
                         # Повертаємо shots навіть у разі виключення
                         if eval_shots is not None:
@@ -655,6 +862,10 @@ def main(argv: Optional[list[str]] = None) -> int:
                 if (val_loader is None) and (save_every > 0) and (ep % save_every == 0):
                     torch.save(model.state_dict(), run_paths.model_pt)
                     logger.info("Збережено модель (кожні %d епох) → %s", save_every, run_paths.model_pt)
+
+                # Early stop вихід із епох-лупу
+                if stopper is not None and stopper.best_state is not None and stopper.bad_epochs >= stopper.patience:
+                    break
 
                 # Профайлінг епохи → JSONL
                 epoch_ms = int((time.time() - epoch_t0) * 1000)

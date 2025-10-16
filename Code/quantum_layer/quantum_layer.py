@@ -80,8 +80,8 @@ class QuantumLayer(nn.Module):
         self._qnode_stats: Optional[Callable[[torch.Tensor, torch.Tensor], torch.Tensor]] = None
         self._meta_stats: Optional[Dict[str, Any]] = None
         self._spec_stats: Optional[DeviceSpec] = None
-        self._stats_seed_offset: int = 0  # якщо треба, можна зсунути сид лише для зонда
-        self._probe_shots_override: Optional[int] = None
+        self._stats_seed_offset: int = 0  # опційний зсув сид лише для зонда
+        self._probe_shots_override: Optional[int] = None  # опційні shots тільки для зонда
 
         self.logger.debug(
             "Init QuantumLayer | n_qubits=%d, n_layers=%d, topology=%s, encoding=%s, reupload=%s, "
@@ -145,6 +145,17 @@ class QuantumLayer(nn.Module):
         self._spec_stats = None
         self.logger.info("Reseed device: %d -> %d | meta=%s", old, self.spec.seed, self._meta)
 
+    def set_probe_seed_offset(self, offset: Optional[int]) -> None:
+        """
+        Встановлює/скидає зсув seed лише для зонда (stats-QNode). Інвалідовує зонд.
+        None або 0 → вимкнути зсув.
+        """
+        self._stats_seed_offset = int(offset or 0)
+        self._qnode_stats = None
+        self._meta_stats = None
+        self._spec_stats = None
+        self.logger.info("[Inline-DocPS] probe seed offset → %d (stats-QNode will be rebuilt)", self._stats_seed_offset)
+
     def set_probe_shots(self, shots: Optional[int]) -> None:
         """
         Встановлює кількість шотів лише для зонда (stats-QNode). Тренувальний shots не змінюється.
@@ -207,20 +218,18 @@ class QuantumLayer(nn.Module):
 
     # -------------------------- Inline-DocPS утиліти --------------------------
 
-
-
     def _ensure_stats_qnode(self, shots: Optional[int] = None) -> None:
         """
         Ледаче створення окремого QNode для зондів (expval+var).
         Не чіпає тренувальний self._qnode / self.spec.
-        Якщо статистичний QNode ще не існує — будує його
+        Якщо статистичний QNode ще не існує — будує його.
         """
         if self._qnode_stats is not None and self._meta_stats is not None and self._spec_stats is not None:
             return
 
-        # Окремий DeviceSpec для статистики: ті самі shots; опц. зсув сидa
+        # Окремий DeviceSpec для статистики: ті самі або перевизначені shots; опц. зсув сидa
         base = self.spec
-        use_shots = base.shots if shots is None else shots
+        use_shots = shots if shots is not None else (self._probe_shots_override if self._probe_shots_override is not None else base.shots)
         spec_stats = with_shots(base, use_shots)
         if self._stats_seed_offset:
             spec_stats = with_seed(spec_stats, int(spec_stats.seed) + int(self._stats_seed_offset))
@@ -264,7 +273,7 @@ class QuantumLayer(nn.Module):
         if result.dim() != 2 or result.size(1) < expdim + max(vardim, 0):
             raise RuntimeError(f"Unexpected stats result shape {tuple(result.shape)} for expdim={expdim}, vardim={vardim}.")
 
-        E = result[:, :expdim]
+        E = result[:, :expdim].clamp(-1.0, 1.0) # in case the values are not accurate (float operations)
         if vardim > 0:
             V = result[:, expdim:expdim + vardim]
         else:
@@ -315,16 +324,17 @@ class QuantumLayer(nn.Module):
         shift: float = math.pi / 2,
         shots: Optional[int] = None,
         subset: Optional[Sequence[Tuple[int, int]]] = None,
-        reduce_var: Literal["global", "group", "param"] = "param",
+        reduce_var: Literal["param"] = "param",
+        return_epm: bool = False,
     ) -> Dict[str, Any]:
         """
-        Обчислює theta.grad через параметр-шифт та повертає шумову метрику V~.
+        Обчислює theta.grad через параметр-шифт та повертає пер-параметрну шумову метрику var_param.
 
         Returns:
             {
               "grad_theta": torch.Tensor(L, n_qubits),
-              "var_param": Optional[torch.Tensor(L, n_qubits)],
-              "Vtilde": Optional[float],
+              "var_param": torch.Tensor(L, n_qubits),   # карта V_i (документна формула)
+              "Vtilde": None,                           # лишається для сумісності ключів
               "shots": int,
               "expval_dim": int,
               (опц.) "Eplus_mean": float,
@@ -337,6 +347,9 @@ class QuantumLayer(nn.Module):
         if dL_dE.dim() != 2 or dL_dE.size(1) != self.output_dim:
             raise ValueError(f"dL_dE must have shape (B, {self.output_dim}), got {tuple(dL_dE.shape)}.")
 
+        if reduce_var != "param":
+            raise NotImplementedError('Only reduce_var="param" is supported for document-correct experiments.')
+
         self._ensure_stats_qnode(shots=shots)
         assert self._qnode_stats is not None and self._meta_stats is not None and self._spec_stats is not None
 
@@ -345,22 +358,22 @@ class QuantumLayer(nn.Module):
             # Безпека: тренувальний qnode повертає expval_dim; stats qnode має співпасти
             self.logger.warning("expval_dim mismatch: train=%d, stats=%d", self.output_dim, expdim)
 
-        # Коеф. параметр-шифту: стандартно 1/2 для ±π/2
+        # Коеф. параметр-шифту: стандартно 1/2 для ±π/2; інакше 1/(2*sin(shift))
         if abs(float(shift) - (math.pi / 2)) < 1e-8:
-            c_ps = 0.5 # масштабуючий коефіцієн правила parameter-shift
+            c_ps = 0.5
         else:
-            # Загальна формула для симетричних зсувів: 1/(2*sin(shift))
             s = math.sin(float(shift))
             if abs(s) < 1e-12:
                 raise ValueError("Invalid shift for parameter-shift: sin(shift)≈0.")
-            c_ps = 1.0 / (2.0 * s) # c_ps != pi/2
+            c_ps = 1.0 / (2.0 * s)
 
-        # Підмножина параметрів (якщо не задано — всі), які задаються парою індексів - (№layer, №wire)
-
+        # Підмножина параметрів (якщо не задано — всі)
         if subset is None:
-            indices : Sequence[Tuple[int, int]] = [(l, w) for l in range(self.n_layers) for w in range(self.n_qubits)]
+            indices: Sequence[Tuple[int, int]] = [(l, w) for l in range(self.n_layers) for w in range(self.n_qubits)]
         else:
             indices = list(subset)
+            if len(indices) == 0:
+                raise ValueError("subset for backward_inline_docps must not be empty.")
 
         device      = self.theta.device
         theta_dtype = self.theta.dtype
@@ -368,16 +381,19 @@ class QuantumLayer(nn.Module):
         grad_theta_work = torch.zeros(self.n_layers, self.n_qubits, dtype=torch.float32, device=device)
         var_param       = torch.zeros(self.n_layers, self.n_qubits, dtype=torch.float32, device=device)
 
-        # бажано привести dL_dE заздалегідь
+        # dL/dE → float32 на потрібному пристрої
         dL_dE_f32 = dL_dE.to(device=device, dtype=torch.float32, copy=False)
+
+        # 1/(4M) для документної формули
         M = self._spec_stats.shots
         inv_4M = (1.0 / (4.0 * float(M))) if (M is not None and float(M) > 0) else 0.0
-        if inv_4M == 0.0: # 
-            self.logger.warning("[Inline-DocPS] shots=None or M<=0 → Vtilde is not meaningful; treating as 0.")
+        if inv_4M == 0.0:
+            self.logger.warning("[Inline-DocPS] shots=None or M<=0 → V_i неінформативні; трактуємо як 0.")
 
-        # Акуратне усереднення лише по “відвіданих” індексах
-        v_sum = 0.0
-        v_cnt = 0
+        # Діагностика середніх експектацій (якщо запитано). Логування
+        ep_acc = em_acc = 0.0 # E+, E- accumulator. Середні значення
+        ep_cnt = em_cnt = 0   # E+, E- counter. Кількість
+
         for (l, w) in indices:
             E_plus, E_minus, V_plus, V_minus = self.docps_shift_stats(angles_batch, l, w, shift=shift)
 
@@ -388,20 +404,20 @@ class QuantumLayer(nn.Module):
 
             V_plus.clamp_min_(0.0)
             V_minus.clamp_min_(0.0)
+
             # dE/dtheta (B, out_dim)
             dE_dth = c_ps * (E_plus - E_minus)
-            # Проєкція на dL/dE: скаляр по всьому batch та компонентам
+            # Проєкція на dL/dE: сумування по batch та out_dim
             g_lw = torch.sum(dE_dth * dL_dE_f32)
             grad_theta_work[l, w] = g_lw
 
-            # Оцінка шуму документа
-            if inv_4M > 0.0:
-                v_lw = inv_4M * float(torch.mean(V_plus + V_minus).item())
-            else:
-                v_lw = 0.0
+            # Документна оцінка шуму для параметра i
+            v_lw = inv_4M * float(torch.mean(V_plus + V_minus).item()) if inv_4M > 0.0 else 0.0
             var_param[l, w] = v_lw
-            v_sum += v_lw
-            v_cnt += 1
+
+            if return_epm:
+                ep_acc += float(E_plus.mean().item()); ep_cnt += 1
+                em_acc += float(E_minus.mean().item()); em_cnt += 1
 
         # Пишемо градієнт у параметр (torch-сумісно)
         if self.theta.grad is not None:
@@ -409,30 +425,23 @@ class QuantumLayer(nn.Module):
             self.theta.grad.zero_()
 
         grad_theta_out = torch.zeros_like(self.theta)
-        grad_theta_out.copy_(grad_theta_work.to(dtype=theta_dtype)) 
+        grad_theta_out.copy_(grad_theta_work.to(dtype=theta_dtype))
         self.theta.grad = grad_theta_out
-
-        # Агрегація V~
-        if reduce_var == "group":
-            raise NotImplementedError("reduce_var \"group\" is not implemented for now")
-        if reduce_var == "param":
-            Vtilde: Optional[float] = None
-            var_out = var_param
-        else:
-            Vtilde = float(v_sum / v_cnt) if v_cnt > 0 else 0.0
-            var_out = None
 
         out: Dict[str, Any] = {
             "grad_theta": grad_theta_out,
-            "var_param": var_out,
-            "Vtilde": Vtilde,
+            "var_param": var_param,        # карта V_i
+            "Vtilde": None,               # для сумісності ключів (не використовується у param-режимі)
             "shots": int(self._spec_stats.shots) if self._spec_stats.shots is not None else -1,
             "expval_dim": int(expdim),
         }
+        if return_epm and ep_cnt > 0 and em_cnt > 0:
+            out["Eplus_mean"] = ep_acc / ep_cnt
+            out["Eminus_mean"] = em_acc / em_cnt
+
         self.logger.debug(
-            "[Inline-DocPS] backward: B=%d, subset=%d, shift=%.4f, shots=%s, reduce=%s, Vtilde=%s",
-            B, len(indices), float(shift), str(self._spec_stats.shots), reduce_var,
-            (f"{Vtilde:.3e}" if Vtilde is not None else "—"),
+            "[Inline-DocPS] backward: B=%d, subset=%d, shift=%.4f, shots=%s, reduce=param",
+            B, len(indices), float(shift), str(self._spec_stats.shots),
         )
         return out
 

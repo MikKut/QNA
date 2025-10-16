@@ -230,11 +230,11 @@ def get_optimizer(
     elif norm == "adam":
         from torch.optim import Adam as _Adam
         ctor = _Adam
-        allowed = {"lr", "betas", "eps", "weight_decay", "amsgrad"}
+        allowed = {"lr", "betas", "eps", "weight_decay", "amsgrad", "maximize"}
     elif norm == "adamw":
         from torch.optim import AdamW as _AdamW
         ctor = _AdamW
-        allowed = {"lr", "betas", "eps", "weight_decay", "amsgrad"}
+        allowed = {"lr", "betas", "eps", "weight_decay", "amsgrad", "maximize"}
     elif norm == "sgd":
         from torch.optim import SGD as _SGD
         ctor = _SGD
@@ -252,12 +252,15 @@ def get_optimizer(
                 "Add it, or switch optim.name to 'adam'."
             ) from e
         ctor = _QNAAdam
-        # allow Adam keys + QNA-specific tuning knobs
         allowed = {
-            "lr", "betas", "eps", "weight_decay", "amsgrad",
-            "use_noise_estimator", "window", "snr_floor", "min_lr", "max_lr",
-            "bias_correction", "grad_ema", "ema_beta", "clip_grad", "clip_value",
+            # Adam-параметри:
+            "lr", "betas", "eps", "weight_decay", "amsgrad", "maximize",
+            # QNA-параметри:
+            "lambda_var", "lr_min_mult", "lr_max_mult", "vtilde_key",
+            "clip_in_optimizer", "max_norm", "error_if_nonfinite", "grad_eps",
         }
+
+
     else:
         raise ValueError(f"Unknown optimizer '{name}'. Available: {sorted(available().keys())}")
 
