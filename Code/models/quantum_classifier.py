@@ -124,9 +124,9 @@ class QuantumClassifier(nn.Module):
         self._last_phi = phi.detach()
 
         # Основний квантовий forward
-        expvals: torch.Tensor = self.quantum(phi)
 
         expvals: torch.Tensor = self.quantum(phi)  # (B, out_dim)
+        
         if expvals.dim() != 2 or expvals.size(1) != self.quantum_out_dim:
             raise RuntimeError(
                 f"QuantumLayer returned shape {tuple(expvals.shape)}; "

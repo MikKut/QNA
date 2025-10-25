@@ -56,15 +56,19 @@ def _fmt(x: Optional[float], n=6) -> str:
 
 
 def _load_metrics_df(path: str) -> pd.DataFrame:
-    # перший рядок у нас "sep=;" — pandas це зрозуміє, але без engine="python" може сваритися на крапку з комою.
     with open(path, "r", encoding="utf-8") as f:
         first = f.readline()
-    sep = ";" if "sep=;" in first else ","
-    df = pd.read_csv(path, sep=sep, comment="s", engine="python")
-    # нормалізуємо типи
-    for col in ["epoch", "step", "time_ms"]:
-        if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors="ignore")
+    skip = 1 if first.strip().lower().startswith("sep=") else 0
+    df = pd.read_csv(path, sep=";", decimal=",", engine="python", skiprows=skip)
+
+    # Спробуємо привести типи (м’яко)
+    num_cols = [
+        "epoch","step","time_ms","loss","acc","grad_norm_raw","grad_norm",
+        "clipped","lr","shots","Vtilde"
+    ]
+    for c in num_cols:
+        if c in df.columns:
+            df[c] = pd.to_numeric(df[c], errors="coerce")
     return df
 
 

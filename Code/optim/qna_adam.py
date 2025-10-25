@@ -288,12 +288,13 @@ class QNAAdam(Optimizer):
 
                 # --- state init ---
                 state = self.state[p]
-                if len(state) == 0:
-                    state["step"] = 0
+                if "exp_avg" not in state:
                     state["exp_avg"] = torch.zeros_like(p.data)
+                if "exp_avg_sq" not in state:
                     state["exp_avg_sq"] = torch.zeros_like(p.data)
-                    if amsgrad:
-                        state["max_exp_avg_sq"] = torch.zeros_like(p.data)
+                if amsgrad and "max_exp_avg_sq" not in state:
+                    state["max_exp_avg_sq"] = torch.zeros_like(p.data)
+                state["step"] = int(state.get("step", 0))
 
                 exp_avg: torch.Tensor = state["exp_avg"]
                 exp_avg_sq: torch.Tensor = state["exp_avg_sq"]
@@ -318,7 +319,7 @@ class QNAAdam(Optimizer):
                     denom = exp_avg_sq.sqrt().add_(eps)
 
                 # Bias correction
-                state["step"] += 1
+                state["step"] = int(state.get("step", 0)) + 1
                 step_t = state["step"]
                 bias_c1 = 1.0 - beta1 ** step_t
                 bias_c2 = 1.0 - beta2 ** step_t

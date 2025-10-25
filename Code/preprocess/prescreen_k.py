@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# Code/preprocess/prescreen_k.py
 """
 Prescreen k: швидко оцінює k для кутового кодування на обраному спліті,
 використовуючи z-кеш (з fingerprint-перевіркою) або обчислення z на льоту.
@@ -28,7 +28,7 @@ import numpy as np
 
 from Code.utils.io_utils import (
     load_project_config, load_yaml, save_yaml, load_npy, save_json,
-    ensure_dir, assert_no_nan
+    ensure_dir, assert_no_nan, class_suffix
 )
 from Code.logger import setup_logger
 from Code.preprocess.transforms import PCScaler, validate_z_cache_from_stats
@@ -50,16 +50,23 @@ def _parse_args() -> argparse.Namespace:
 
 # ---------------------- helpers ----------------------
 
-def _paths_for_split(cfg: Dict, split: str) -> Tuple[str, str]:
+def _paths_for_split(cfg: Dict, split: str) -> Tuple[str, str, str]:
     p = cfg.get("paths", {})
     zc = p.get("z_cache", {})
     if split == "train":
-        return p.get("X_train_pca", "./data/X_train_pca.npy"), zc.get("train", "./data/Z_train_std.npy")
+        return (p.get("X_train_pca", "./data/X_train_pca.npy"),
+                zc.get("train", "./data/Z_train_std.npy"),
+                p.get("y_train", "./data/y_train.npy"))
     if split == "val":
-        return p.get("X_val_pca", "./data/X_val_pca.npy"), zc.get("val", "./data/Z_val_std.npy")
+        return (p.get("X_val_pca", "./data/X_val_pca.npy"),
+                zc.get("val", "./data/Z_val_std.npy"),
+                p.get("y_val", "./data/y_val.npy"))
     if split == "test":
-        return p.get("X_test_pca", "./data/X_test_pca.npy"), zc.get("test", "./data/Z_test_std.npy")
+        return (p.get("X_test_pca", "./data/X_test_pca.npy"),
+                zc.get("test", "./data/Z_test_std.npy"),
+                p.get("y_test", "./data/y_test.npy"))
     raise ValueError(f"Unknown split: {split}")
+
 
 def _load_or_compute_z(
     cfg: Dict,
@@ -70,10 +77,19 @@ def _load_or_compute_z(
     check_nan: bool,
     logger,
 ) -> Optional[np.ndarray]:
-    X_path, Z_path = _paths_for_split(cfg, split)
+    X_path, Z_path, y_path = _paths_for_split(cfg, split)
     pca_dim = int(cfg.get("pca", {}).get("dim", 8))
 
-    # спробуємо кеш
+    # 0) зчитаємо y (для маски класів — і при Z-кеші, і при X_pca)
+    target_classes = cfg.get("data", {}).get("target_classes", None)
+    y = None
+    if target_classes:
+        if not Path(y_path).exists():
+            logger.warning("Відсутній y_* для split=%s: %s — фільтрування класів неможливе.", split, y_path)
+        else:
+            y = load_npy(y_path).astype(np.int64, copy=False)
+
+    # 1) спроба взяти Z з кешу
     if use_cache in ("auto", "yes"):
         sidecar = str(Path(Z_path).with_suffix(Path(Z_path).suffix + ".fp.yaml"))
         if Path(Z_path).exists():
@@ -93,13 +109,18 @@ def _load_or_compute_z(
                         assert_no_nan(Z, f"{Path(Z_path).name}")
                     if Z.ndim == 2 and Z.shape[1] == pca_dim:
                         logger.info("Використовуємо Z-кеш для split=%s: %s", split, Z_path)
-                        return Z
+                        # ⬇️ застосуємо фільтр класів, якщо треба
+                        if y is not None and isinstance(target_classes, (list, tuple)) and len(target_classes) < 10:
+                            mask = np.isin(y, list(map(int, target_classes)))
+                            Z = Z[mask]
+                            logger.info("Фільтр класів застосовано до Z: залишилось %d рядків.", Z.shape[0])
+                        return np.asarray(Z)
                     else:
                         logger.warning("Форма Z не відповідає pca_dim; перераховуємо на льоту.")
                 except FileNotFoundError:
                     pass
 
-    # на льоту
+    # 2) на льоту від X_pca
     if not Path(X_path).exists():
         logger.warning("Відсутній X_*_pca для split=%s: %s", split, X_path)
         return None
@@ -111,11 +132,17 @@ def _load_or_compute_z(
         raise ValueError(f"{X_path}: очікувана форма (*,{pca_dim}), отримано {X.shape}")
     if check_nan:
         assert_no_nan(X, f"{Path(X_path).name}")
+
+    # ⬇️ фільтр класів для X, якщо треба
+    if y is not None and isinstance(target_classes, (list, tuple)) and len(target_classes) < 10:
+        mask = np.isin(y, list(map(int, target_classes)))
+        X = X[mask]
+        logger.info("Фільтр класів застосовано до X_pca: залишилось %d рядків.", X.shape[0])
+
     Z = scaler.transform(X)
     if check_nan:
         assert_no_nan(Z, f"Z_{split}_std")
     return np.asarray(Z)
-
 
 def _choose_k_from_grid(k_arr: np.ndarray, overall_clip: np.ndarray, target: float) -> float:
     ok = np.where(overall_clip < float(target))[0]

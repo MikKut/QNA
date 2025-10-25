@@ -215,6 +215,8 @@ def create_qnode(
         "diff_method": diff_method,
         "device": dev_info,
         "measurement_mode": measurement_mode,
+        "expval_dim": out_dim,                                # завжди дорівнює out_dim
+        "var_dim": out_dim if measurement_mode=="expval_var" else 0,
     }
     logger.debug("QNode created: %s", meta)
 

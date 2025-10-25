@@ -7,28 +7,30 @@ project:
 
 paths:
   data_root: "./data"
-  X_train_pca: "./data/X_train_pca.npy"
-  X_val_pca:   "./data/X_val_pca.npy"
-  X_test_pca:  "./data/X_test_pca.npy"
-  y_train: "./data/y_train.npy"
-  y_val:   "./data/y_val.npy"
-  y_test:  "./data/y_test.npy"
-  pca_meta: "./data/pca_meta.npz"
-  preprocess_stats: "./data/preprocess_stats.yaml"
+  X_train_pca: "./data/X_train_pca_cls3589.npy"
+  X_val_pca:   "./data/X_val_pca_cls3589.npy"
+  X_test_pca:  "./data/X_test_pca_cls3589.npy"
+  y_train: "./data/y_train_cls3589.npy"
+  y_val:   "./data/y_val_cls3589.npy"
+  y_test:  "./data/y_test_cls3589.npy"
+  pca_meta: "./data/pca_meta_cls3589.npz"
+  preprocess_stats: "./data/preprocess_stats_cls3589.yaml"
   z_cache:
-    train: "./data/Z_train_std.npy"
-    val:   "./data/Z_val_std.npy"
-    test:  "./data/Z_test_std.npy"
+    train: "./data/Z_train_std_cls3589.npy"
+    val:   "./data/Z_val_std_cls3589.npy"
+    test:  "./data/Z_test_std_cls3589.npy"
 
 data:
-  n_classes: 10
-  train_path: "./data/X_train_pca.npy"   # дефолт — існуючі PCA-файли
-  val_path:   "./data/X_val_pca.npy"
-  test_path:  "./data/X_test_pca.npy"
+  n_classes: 4                
+  target_classes: [0, 1, 2, 3]
+  use_class_suffix: true
+  train_path: "./data/X_train_pca_cls3589.npy"   # дефолт — існуючі PCA-файли
+  val_path:   "./data/X_val_pca_cls3589.npy"
+  test_path:  "./data/X_test_pca_cls3589.npy"
 
-  train_phi: "./data/train_phi.npz"   # {phi: (N,8), y: (N,)}
-  val_phi:   "./data/val_phi.npz"
-  test_phi:  "./data/test_phi.npz"
+  train_phi: "./data/train_phi_cls3589.npz"   # {phi: (N,8), y: (N,)}
+  val_phi:   "./data/val_phi_cls3589.npz"
+  test_phi:  "./data/test_phi_cls3589.npz"
 
 angles:                     # використовується у тренуванні (онлайн)
   k: 2.5
@@ -48,6 +50,7 @@ split:
   stratify: true
   shuffle: true
   split_seed: 42
+  val_fraction: 0.2
 
 pca:
   dim: 8

@@ -95,7 +95,7 @@ class PCScaler:
     @classmethod
     def from_dict(cls, d: Dict[str, Any]) -> "PCScaler":
         method = str(d.get("method", "zscore")).lower()
-        pca_dim = int(d.get("pca_dim"))
+        pca_dim = int(d.get("pca_dim")) #fails here
         eps = float(d.get("eps", 1e-8))
         dtype_str = str(d.get("dtype", "float32"))
         stats = d.get("stats", {}) or {}

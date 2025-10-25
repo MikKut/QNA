@@ -1,24 +1,19 @@
-# Code/preprocess_pca.py
+# Code/preprocess/preprocess_pca.py
 """
 PCA препроцес для MNIST:
 - Завантажити MNIST (train/test), масштабувати пікселі (опц.), розплющити вектори 784.
+- (опц.) Відібрати підмножину класів data.target_classes і ремапнути мітки у 0..C-1.
 - Розбити train на train/val (стратифіковано).
 - Fit PCA лише на train, transform для train/val/test (n_components = p).
-- Зберегти X_*_pca.npy, y_*.npy.
-- Зберегти pca_meta.npz:
-    * якщо pca.save_extras=true → повний набір полів (components_, mean_, EV, EVR, singular_values_ тощо);
-    * якщо false → мінімум (pca_dim, whiten, random_state, evr_sum [+ опц. перша частина EVR]).
-- Логи: shapes, class counts, сумарна пояснена дисперсія, базові статистики проєкцій train-PC.
-
-Додатково:
-- pca.meta_compressed (bool, опц., дефолт=true): використовувати np.savez_compressed для pca_meta.npz
+- Зберегти X_*_pca.npy, y_*.npy (+ суфікс _clsXYZ, якщо вмикнено).
+- Зберегти pca_meta(.npz) (з опц. компресією і додатковими полями).
 """
 
 from __future__ import annotations
 
 import argparse
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, Dict, Any, Sequence
 
 import numpy as np
 from sklearn.decomposition import PCA
@@ -27,13 +22,13 @@ from sklearn.model_selection import train_test_split
 # локальні утиліти
 from Code.utils.io_utils import (
     load_project_config, set_seed, ensure_parent_dir, save_npy, save_npz,
-    assert_no_nan, as_dtype, check_overwrite
+    assert_no_nan, as_dtype, check_overwrite, class_suffix
 )
 from ..logger import setup_logger
 
 # Опціонально: torchvision може бути не встановлений у деяких середовищах
 try:
-    import torch
+    import torch  # noqa: F401
     from torchvision import datasets, transforms
 except Exception as e:
     raise RuntimeError(
@@ -70,6 +65,21 @@ def _load_mnist_as_arrays(root: Path, scale_to_unit: bool, dtype: str) -> Tuple[
     return X_train, y_train, X_test, y_test
 
 
+def _filter_and_remap_subset(
+    X: np.ndarray, y: np.ndarray, target_classes: Sequence[int]
+) -> Tuple[np.ndarray, np.ndarray, Dict[int, int]]:
+    """
+    Фільтрує (X,y) за target_classes і ремапить y у 0..C-1 у порядку target_classes.
+    Повертає (X_kept, y_remapped, class2new).
+    """
+    tc = list(map(int, target_classes))
+    class2new = {c: i for i, c in enumerate(tc)}
+    mask = np.isin(y, tc)
+    X_kept, y_kept = X[mask], y[mask]
+    y_new = np.array([class2new[int(v)] for v in y_kept], dtype=np.int64)
+    return X_kept, y_new, class2new
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="MNIST → PCA препроцес")
     ap.add_argument("--config", type=str, default="./project.yaml", help="Шлях до project.yaml")
@@ -93,16 +103,38 @@ def main() -> None:
     seed = int(proj.get("seed", 42))
     set_seed(seed)
 
+    # дані/шляхи
     paths = cfg.get("paths", {})
     data_root = Path(paths.get("data_root", "./data"))
 
+    # базові (без суфікса)
     X_train_pca_path = paths.get("X_train_pca", "./data/X_train_pca.npy")
     X_val_pca_path   = paths.get("X_val_pca",   "./data/X_val_pca.npy")
     X_test_pca_path  = paths.get("X_test_pca",  "./data/X_test_pca.npy")
-    y_train_path = paths.get("y_train", "./data/y_train.npy")
-    y_val_path   = paths.get("y_val",   "./data/y_val.npy")
-    y_test_path  = paths.get("y_test",  "./data/y_test.npy")
-    pca_meta_path = paths.get("pca_meta", "./data/pca_meta.npz")
+    y_train_path     = paths.get("y_train",     "./data/y_train.npy")
+    y_val_path       = paths.get("y_val",       "./data/y_val.npy")
+    y_test_path      = paths.get("y_test",      "./data/y_test.npy")
+    pca_meta_path    = paths.get("pca_meta",    "./data/pca_meta.npz")
+
+    # налаштування суфікса
+    data_cfg = cfg.get("data", {})
+    target_classes = data_cfg.get("target_classes", None)
+    use_cls_suffix = bool(data_cfg.get("use_class_suffix", True))
+    full_classes = int(data_cfg.get("full_classes", 10))
+    suf = class_suffix(target_classes, full_classes=full_classes) if use_cls_suffix else ""
+
+    # застосувати суфікс до вихідних файлів (якщо потрібно)
+    if suf:
+        def _add_suf(p: str) -> str:
+            pth = Path(p)
+            return str(pth.with_name(pth.stem + suf + pth.suffix))
+        X_train_pca_path = _add_suf(X_train_pca_path)
+        X_val_pca_path   = _add_suf(X_val_pca_path)
+        X_test_pca_path  = _add_suf(X_test_pca_path)
+        y_train_path     = _add_suf(y_train_path)
+        y_val_path       = _add_suf(y_val_path)
+        y_test_path      = _add_suf(y_test_path)
+        pca_meta_path    = _add_suf(pca_meta_path)
 
     # запобігти випадковому перезапису
     for out_path in [X_train_pca_path, X_val_pca_path, X_test_pca_path, y_train_path, y_val_path, y_test_path, pca_meta_path]:
@@ -131,10 +163,12 @@ def main() -> None:
     svd_solver = str(pca_cfg.get("svd_solver", "auto"))
     pca_random_state = int(pca_cfg.get("random_state", seed))
     save_extras = bool(pca_cfg.get("save_extras", True))
-    meta_compressed = bool(pca_cfg.get("meta_compressed", True))  # нове: стислий npz
+    meta_compressed = bool(pca_cfg.get("meta_compressed", True))  # стислий npz
 
-    logger.info("Початок препроцесу: seed=%d, pca_dim=%d, whiten=%s, save_extras=%s, meta_compressed=%s",
-                seed, p, whiten, save_extras, meta_compressed)
+    logger.info(
+        "Початок препроцесу: seed=%d, pca_dim=%d, whiten=%s, save_extras=%s, meta_compressed=%s, target_classes=%s, suffix='%s'",
+        seed, p, whiten, save_extras, meta_compressed, target_classes if target_classes else "ALL", suf
+    )
 
     # ---------- Завантаження MNIST ----------
     X_train_raw, y_train_full, X_test_raw, y_test = _load_mnist_as_arrays(
@@ -142,12 +176,33 @@ def main() -> None:
     )
     logger.info("MNIST завантажено. Train=%d, Test=%d, dim=%d", X_train_raw.shape[0], X_test_raw.shape[0], X_train_raw.shape[1])
 
+    # ---------- (опц.) Фільтр підмножини класів + ремап 0..C-1 ----------
+    class2new: Dict[int, int] = {}
+    if target_classes and len(target_classes) < full_classes:
+        X_train_raw, y_train_full, class2new = _filter_and_remap_subset(X_train_raw, y_train_full, target_classes)
+        X_test_raw,  y_test,  _               = _filter_and_remap_subset(X_test_raw,  y_test,        target_classes)
+        logger.info(
+            "Фільтр класів застосовано: %s → C=%d. Після фільтра: train=%d, test=%d",
+            list(map(int, target_classes)), len(class2new), X_train_raw.shape[0], X_test_raw.shape[0]
+        )
+
     # ---------- Train/Val split ----------
     if make_val:
         if val_fraction is not None:
             test_size = float(val_fraction)
         else:
             test_size = float(val_size) / float(X_train_raw.shape[0])
+
+        # sanity: чи не надто малий валідаційний набір для C класів
+        n_classes_now = int(len(np.unique(y_train_full)))
+        exp_val = int(round(test_size * X_train_raw.shape[0]))
+        if n_classes_now > 1 and exp_val < n_classes_now:
+            logger.warning(
+                "val_size замалий для %d класів (очікувана валід. кількість %d < %d). "
+                "Ризик відсутніх класів у val.",
+                n_classes_now, exp_val, n_classes_now
+            )
+
         logger.info("Робимо валідаційний спліт: test_size=%.4f (stratify=%s, shuffle=%s, seed=%d)",
                     test_size, stratify, shuffle, split_seed)
         X_train, X_val, y_train, y_val = train_test_split(
@@ -210,8 +265,8 @@ def main() -> None:
     }
 
     # Якщо потрібні «важкі» поля — додаємо:
-    meta_full = {}
-    meta_str  = {}
+    meta_full: Dict[str, Any] = {}
+    meta_str: Dict[str, Any]  = {}
     if save_extras:
         meta_full.update({
             "components_":               pca.components_.astype(np.float32, copy=False),
@@ -219,31 +274,32 @@ def main() -> None:
             "explained_variance_":       pca.explained_variance_.astype(np.float32, copy=False),
             "explained_variance_ratio_": pca.explained_variance_ratio_.astype(np.float32, copy=False),
         })
-        # singular_values_ може бути відсутнім
         sv = getattr(pca, "singular_values_", None)
         if sv is not None:
             meta_full["singular_values_"] = np.asarray(sv, dtype=np.float32)
-
-        # рядковий solver кладемо як bytes
         meta_str["svd_solver_str"] = np.frombuffer(svd_solver.encode("utf-8"), dtype=np.uint8)
 
-        # маленький бонус: збережемо перші кілька EVR як скаляри (навіть якщо full вимкнутий, це можна додати)
-        # але тут ми вже додали весь EVR у meta_full; тож ок.
+    # Додаткові поля, якщо працюємо з підмножиною класів
+    if target_classes and len(target_classes) < full_classes:
+        tc_sorted = np.array(sorted(set(map(int, target_classes))), dtype=np.int32)
+        meta_min["target_classes"] = tc_sorted
+        # збережемо також мапу class2new як два масиви (оригінал → новий)
+        orig = tc_sorted
+        new  = np.arange(orig.size, dtype=np.int32)
+        meta_min["class_map_orig"] = orig
+        meta_min["class_map_new"]  = new
 
-    # Об'єднати й записати (з опц. стисненням)
     arrays_to_save = {**meta_min, **meta_full, **meta_str}
     ensure_parent_dir(pca_meta_path)
     if meta_compressed:
-        # напряму через numpy, щоб не міняти io_utils API
         np.savez_compressed(Path(pca_meta_path), **arrays_to_save)
     else:
         save_npz(pca_meta_path, overwrite=overwrite, **arrays_to_save)
 
     logger.info(
-        "Артефакти збережено:\n  %s\n  %s\n  %s\n  %s\n  %s\n  %s\n  %s (extras=%s, compressed=%s)",
+        "Артефакти збережено:\n  %s\n  %s\n  %s\n  %s\n  %s\n  %s\n  %s",
         X_train_pca_path, X_val_pca_path, X_test_pca_path,
         y_train_path, y_val_path, y_test_path, pca_meta_path,
-        save_extras, meta_compressed
     )
     logger.info("Готово.")
 

@@ -96,33 +96,58 @@ class QuantumLayer(nn.Module):
         cls,
         cfg: Dict[str, Any],
         *,
+        # дозволяємо оверрайди, але вони мають пріоритет ЛИШЕ якщо явно передані
         n_layers: Optional[int] = None,
-        topology: Topology = "ring",
-        encoding: EncodingKind | str = "ry",
-        reupload: bool = True,
-        measurement: MeasurementKind | Sequence[str] = "Z",
-        diff_method: Literal["parameter-shift", "best"] = "parameter-shift",
+        topology: Optional[Topology] = None,
+        encoding: Optional[EncodingKind | str] = None,
+        reupload: Optional[bool] = None,
+        measurement: Optional[MeasurementKind | Sequence[str]] = None,
+        diff_method: Optional[Literal["parameter-shift", "best"]] = None,
         dtype: torch.dtype = torch.float32,
         logger: Optional[logging.Logger] = None,
     ) -> "QuantumLayer":
+        # 1) DeviceSpec і n_qubits з конфігу (єдиний source of truth)
         spec = spec_from_config(cfg)
         n_qubits = int(spec.n_qubits)
-        L = int(n_layers if n_layers is not None else int(cfg.get("quantum", {}).get("n_layers", 2)))
-        proj_seed = int(cfg.get("project", {}).get("seed", 42))
+
+        q = cfg.get("quantum", {})
+        proj = cfg.get("project", {})
+
+        # 2) Витягаємо все з cfg з дефолтами
+        L_cfg           = int(q.get("n_layers", 2))
+        topology_cfg    = q.get("topology", "ring")
+        encoding_cfg    = str(q.get("encoding", "ry")).lower()
+        reupload_cfg    = bool(q.get("reupload", True))
+        meas_cfg        = q.get("measurement", q.get("measurements", "Z"))
+        diff_cfg        = q.get("diff_method", "parameter-shift")
+
+        # 3) Параметризуємо ініціалізацію θ
+        #    (Залишаємо теперішню поведінку: беремо project.seed, але дозволяємо override)
+        param_seed = int(proj.get("seed", 42))
+        param_init_std = float(q.get("param_init_std", 0.1))
+
+        # 4) Застосовуємо явні оверрайди, якщо вони ПЕРЕДАНІ
+        L           = int(n_layers) if n_layers is not None else L_cfg
+        topology_v  = topology if topology is not None else topology_cfg
+        encoding_v  = str(encoding).lower() if encoding is not None else encoding_cfg
+        reupload_v  = bool(reupload) if reupload is not None else reupload_cfg
+        meas_v      = measurement if measurement is not None else meas_cfg
+        diff_v      = diff_method if diff_method is not None else diff_cfg
+
         return cls(
             n_qubits=n_qubits,
             n_layers=L,
-            topology=topology,
-            encoding=encoding,
-            reupload=reupload,
-            measurement=measurement,
-            diff_method=diff_method,
+            topology=topology_v,
+            encoding=encoding_v,
+            reupload=reupload_v,
+            measurement=meas_v,
+            diff_method=diff_v,
             spec=spec,
             dtype=dtype,
             logger=logger,
-            param_seed=proj_seed
+            param_seed=param_seed,
+            param_init_std=param_init_std,
         )
-
     # ------------------------ Публічні сервісні методи ------------------------
 
     def set_shots(self, shots: Optional[int]) -> None:

@@ -18,18 +18,18 @@ import random
 
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, List, Dict, Iterable, Mapping, Optional, Tuple, Union
+from typing import Any, List, Dict, Iterable, Mapping, Optional, Union, Sequence
 from pathlib import Path
 from collections.abc import Mapping
 import dataclasses, datetime
 import numpy as np
 import yaml
 import csv
+from datetime import datetime, timezone
 
 import os
 import time
 import random
-from typing import Optional
 
 try:
     # наш проєктний логер
@@ -74,6 +74,17 @@ def check_overwrite(file_path: PathLike, overwrite: bool) -> None:
     if p.exists() and not overwrite:
         raise FileExistsError(f"File exists and overwrite=False: {p}")
 
+def class_suffix(target_classes: Optional[Sequence[int]], full_classes: int = 10) -> str:
+    """
+    Повертає суфікс для імен файлів, якщо підмножина класів (< full_classes).
+    Напр., [3,5,8,9] -> "_cls3589"; None або 10 класів -> "".
+    """
+    if not target_classes:
+        return ""
+    uniq_sorted = sorted(set(int(c) for c in target_classes))
+    if len(uniq_sorted) >= full_classes:
+        return ""
+    return "_cls" + "".join(str(c) for c in uniq_sorted)
 
 # ---------- YAML / JSON ----------
 
@@ -420,7 +431,7 @@ def build_fingerprint(
         torch_version=(torch.__version__ if _HAS_TORCH else None),
         extras=extras,
     )
-
+# _cls3589
 
 def save_fingerprint(fp: Fingerprint, path: PathLike, overwrite: bool = True) -> None:
     """

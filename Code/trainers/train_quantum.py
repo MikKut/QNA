@@ -379,6 +379,15 @@ def _build_loaders(cfg: Dict[str, Any], seed: int, logger) -> Tuple[DataLoader, 
     train_ds = PhiDataset(cfg, mode="train", logger=logger)
     val_ds = PhiDataset(cfg, mode="val", logger=logger)
 
+    if (len(val_ds) == 0):
+        val_loader = None
+        logger.error("validation is absent")
+
+    
+    if (len(train_ds) == 0):
+        train_loader = None
+        logger.error("training is absent")
+
     # Детермінізм для shuffle та воркерів
     g = torch.Generator().manual_seed(seed)
     worker_init = make_worker_init_fn(seed) if num_workers > 0 else None

@@ -14,7 +14,7 @@ except Exception:
     seed_everything = None
 
 
-def _base_config(n_qubits=4, n_classes=3, shots=None, diff_method="adjoint"):
+def _base_config(n_qubits=8, n_classes=3, shots=None, diff_method="adjoint"):
     """
     Базовий конфіг для градієнтних тестів.
     n_qubits зроблено невеликим, щоб тести були швидкі навіть на CI.
