@@ -1,49 +1,51 @@
 project:
-  name: "QNA-QNN-MNIST"
+  name: QNA-QNN-MNIST
   seed: 42
-  output_root: "./runs"
+  output_root: ./runs
   deterministic_torch: false
-
-
 paths:
-  data_root: "./data"
-  X_train_pca: "./data/X_train_pca_cls3589.npy"
-  X_val_pca:   "./data/X_val_pca_cls3589.npy"
-  X_test_pca:  "./data/X_test_pca_cls3589.npy"
-  y_train: "./data/y_train_cls3589.npy"
-  y_val:   "./data/y_val_cls3589.npy"
-  y_test:  "./data/y_test_cls3589.npy"
-  pca_meta: "./data/pca_meta_cls3589.npz"
-  preprocess_stats: "./data/preprocess_stats_cls3589.yaml"
+  data_root: ./data
+  X_train_pca: ./data/X_train_pca.npy
+  X_val_pca: ./data/X_val_pca.npy
+  X_test_pca: ./data/X_test_pca.npy
+  y_train: ./data/y_train.npy
+  y_val: ./data/y_val.npy
+  y_test: ./data/y_test.npy
+  pca_meta: ./data/pca_meta.npz
+  preprocess_stats: ./data/preprocess_stats.yaml
   z_cache:
-    train: "./data/Z_train_std_cls3589.npy"
-    val:   "./data/Z_val_std_cls3589.npy"
-    test:  "./data/Z_test_std_cls3589.npy"
-
+    train: ./data/Z_train_std.npy
+    val: ./data/Z_val_std.npy
+    test: ./data/Z_test_std.npy
 data:
-  n_classes: 4                
-  target_classes: [0, 1, 2, 3]
+  n_classes: 4
+  target_classes:
+  - 0
+  - 1
+  - 2
+  - 3
   use_class_suffix: true
-  train_path: "./data/X_train_pca_cls3589.npy"   # дефолт — існуючі PCA-файли
-  val_path:   "./data/X_val_pca_cls3589.npy"
-  test_path:  "./data/X_test_pca_cls3589.npy"
-
-  train_phi: "./data/train_phi_cls3589.npz"   # {phi: (N,8), y: (N,)}
-  val_phi:   "./data/val_phi_cls3589.npz"
-  test_phi:  "./data/test_phi_cls3589.npz"
-
-angles:                     # використовується у тренуванні (онлайн)
+  train_path: ./data
+  val_path: ./data
+  test_path: ./data
+  train_phi: ./data/train_phi_cls0123.npz
+  val_phi: ./data/val_phi_cls0123.npz
+  test_phi: ./data/test_phi_cls0123.npz
+pca:
+  dim: 8
+  whiten: false
+  svd_solver: auto
+  random_state: 42
+  save_extras: true
+angles:
   k: 2.5
   angle_max: 3.141592653589793
   clip: true
-
 run:
-  stage: "both"            # "preprocess" | "train" | "both"
-
+  stage: both
 pixels:
   scale_to_unit: true
-  dtype: "float32"
-
+  dtype: float32
 split:
   make_val_split: true
   val_size: 10000
@@ -51,26 +53,17 @@ split:
   shuffle: true
   split_seed: 42
   val_fraction: 0.2
-
-pca:
-  dim: 8
-  whiten: false            # абляція C
-  svd_solver: "auto"
-  random_state: 42
-  save_extras: true
-
-scaler:                     # обирається на етапі fit (офлайн)
-  method: "zscore"         # "zscore" | "robust" | "global_l2" | "maxabs"
-  eps: 1.0e-8
+scaler:
+  method: zscore
+  eps: 1.0e-08
   robust:
-    kind: "mad"            # "mad" | "iqr"
+    kind: mad
     c_mad: 1.4826
     c_iqr: 1.349
   global:
-    axis: "vector"
-
+    axis: vector
 training:
-  optimizer: "adam"        # "adam" | "qna_adam"
+  optimizer: adam
   lr: 0.001
   batch_size: 64
   epochs: 15
@@ -82,88 +75,86 @@ training:
   num_workers: 0
   early_stopping:
     enable: true
-    monitor: "val_loss"   # "val_loss" або "val_acc"
-    mode: "min"           # "min" для loss, "max" для acc
+    monitor: val_loss
+    mode: min
     patience: 5
-    min_delta: 0.0        # наскільки має покращитись метрика, щоб «зафіксувати покращення»
-    warmup_epochs: 0      # скільки епох ігнорувати bad-epochs на старті
-    restore_best: true    # зберігати/залишати найкращу модель (у нас і так зберігаємо)
+    min_delta: 0.0
+    warmup_epochs: 0
+    restore_best: true
   inline_docps:
     enabled: true
-    shift: 1.5707963267948966   # π/2
-    reduce_var: "param"         # "param" | "global"
-    stats_seed_offset: 0        # 0 → той самий сид, але окремий QNode (незалежний RNG-трек)
+    shift: 1.5707963267948966
+    reduce_var: param
+    stats_seed_offset: 0
     subset:
-      mode: "all"               # "all" | "random" | "topk"
-      ratio: 1.0                # для "random": частка параметрів; для "topk": верхня частка за |∂L/∂E|
-      min_params: 0   
-
+      mode: all
+      ratio: 1.0
+      min_params: 0
 diagnostics:
-  prescreen_k: [1.5, 2.0, 2.5, 3.0, 3.5]
-  save_tables_to: "./runs/preproc/diag_k.csv"
-  save_stats_to:  "./runs/preproc/z_stats.json"
+  prescreen_k:
+  - 1.5
+  - 2.0
+  - 2.5
+  - 3.0
+  - 3.5
+  save_tables_to: ./runs/preproc/diag_k.csv
+  save_stats_to: ./runs/preproc/z_stats.json
   make_plots: false
-
 z_cache:
   enable: true
   fingerprint: true
-
 logging:
-  level: "INFO"
-  dir: "./runs"
-  preprocess_log: "./runs/preproc/preprocess.log"
-  train_log: "./runs/train/train.log"
+  level: INFO
+  dir: ./runs
+  preprocess_log: ./runs/preproc/preprocess.log
+  train_log: ./runs/train/train.log
   qna:
-    log_each_step: false          # true → писати Ṽ/scale у CSV на кожному кроці (повільніше)
-    log_each_epoch: true          # true → агрегати за епоху
-    csv_metrics: "./runs/train/qna_metrics.csv"
-
+    log_each_step: false
+    log_each_epoch: true
+    csv_metrics: ./runs/train/qna_metrics.csv
 safety:
   overwrite: true
   assert_no_nan: true
-  require_finite_shots: true 
-
+  require_finite_shots: true
 csv:
-  delimiter: ";"       
-  excel_sep_hint: true  
-  utf8_bom: true      
-
+  delimiter: ;
+  excel_sep_hint: true
+  utf8_bom: true
 quantum:
-  device: "default.qubit"
-  shots: 100                 # для аналітики: поставити null
+  device: default.qubit
+  shots: 100
   n_layers: 2
-  topology: "ring"
+  topology: ring
   reupload: true
-  encoding: "ry"           # ry|rx|rz|xy — символи узгоджені з QuantumLayer, але не функціонал
-  measurements: "ZX"        # "Z" | "ZX" | "ZXY" (оскільки поки у нас тільки ry - поки не має сенсу)
-  diff_method: "parameter-shift"     # "adjoint" | "parameter-shift" | "finite-diff"
-  eval_shots: 2048 
+  encoding: ry
+  measurements: ZX
+  diff_method: parameter-shift
+  eval_shots: 2048
   reseed_each_epoch: false
-
 optim:
-  name: "qna_adam"                # один і той самий оптимізатор для обох прогонів
-  lr: 3.0e-4
-  weight_decay: 0.0               # це Adam (L2), НЕ AdamW
-  betas: [0.9, 0.999]
-  eps: 1.0e-8
+  name: qna_adam
+  lr: 0.0003
+  weight_decay: 0.0
+  betas:
+  - 0.9
+  - 0.999
+  eps: 1.0e-08
   amsgrad: false
   maximize: false
-  # --- QNA-специфіка ---
   qna:
-    lambda_var: 0.0 #1.0e-3       # >0.0 → QNA-Adam; =0.0 → «класичний Adam» (для baseline)
-    lr_min_mult: 0.10             # нижня межа масштабування (не стискаємо крок безмежно)
-    lr_max_mult: 1.0              # не збільшуємо понад базовий lr
-    mode: "param"                 # "param" (пер-параметрне масштабування) | "global"
-    vtilde_key: "qna_vtilde"      # для global-варіанту (якщо колись знадобиться)
-    state_key: "qna_var_param"    # ключ у state[p] для Var_i (пер-параметрна логіка)
-    clip_in_optimizer: false      # за потреби перевести кліпінг сюди, а training.grad_clip → 0.0
+    lambda_var: 0.0
+    lr_min_mult: 0.1
+    lr_max_mult: 1.0
+    mode: param
+    vtilde_key: qna_vtilde
+    state_key: qna_var_param
+    clip_in_optimizer: false
     max_norm: 1.0
     error_if_nonfinite: false
-    grad_eps: 1.0e-6
-
+    grad_eps: 1.0e-06
 schedules:
   shots:
-    mode: "none"              # "none" | "linear"
-    start: 100                 # значення на 1-й епосі
-    end: 1000                  # значення на останній епосі
-    epochs: 15                # протягом скількох епох робити інтерполяцію
+    mode: none
+    start: 100
+    end: 1000
+    epochs: 15

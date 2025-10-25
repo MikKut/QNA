@@ -69,11 +69,11 @@ def _filter_and_remap_subset(
     X: np.ndarray, y: np.ndarray, target_classes: Sequence[int]
 ) -> Tuple[np.ndarray, np.ndarray, Dict[int, int]]:
     """
-    Фільтрує (X,y) за target_classes і ремапить y у 0..C-1 у порядку target_classes.
+    Фільтрує (X,y) за target_classes і ремапить y у 0..C-1 у ПОРЯДКУ target_classes.
     Повертає (X_kept, y_remapped, class2new).
     """
     tc = list(map(int, target_classes))
-    class2new = {c: i for i, c in enumerate(tc)}
+    class2new = {c: i for i, c in enumerate(tc)}  # порядок важливий
     mask = np.isin(y, tc)
     X_kept, y_kept = X[mask], y[mask]
     y_new = np.array([class2new[int(v)] for v in y_kept], dtype=np.int64)
@@ -153,6 +153,7 @@ def main() -> None:
     split_seed = int(split.get("split_seed", seed))
     val_size  = split.get("val_size", 10000)
     val_fraction = split.get("val_fraction", None)
+
     if val_fraction is not None and not make_val:
         logger.warning("split.val_fraction задано, але make_val_split=False — val не буде створено.")
 
@@ -185,13 +186,24 @@ def main() -> None:
             "Фільтр класів застосовано: %s → C=%d. Після фільтра: train=%d, test=%d",
             list(map(int, target_classes)), len(class2new), X_train_raw.shape[0], X_test_raw.shape[0]
         )
+        logger.info("class2new mapping: %s", class2new)
 
     # ---------- Train/Val split ----------
     if make_val:
+        # пріоритет val_fraction; інакше обчислити частку з абсолютного val_size
         if val_fraction is not None:
             test_size = float(val_fraction)
         else:
             test_size = float(val_size) / float(X_train_raw.shape[0])
+
+        # guard проти некоректних значень
+        if not (0.0 < test_size < 1.0):
+            logger.warning(
+                "Невалідний test_size=%.6f (val_fraction/val_size відносно train=%d). "
+                "Автокорекція до 0.2. Перевір конфіг.",
+                test_size, X_train_raw.shape[0]
+            )
+            test_size = 0.2
 
         # sanity: чи не надто малий валідаційний набір для C класів
         n_classes_now = int(len(np.unique(y_train_full)))
@@ -279,13 +291,13 @@ def main() -> None:
             meta_full["singular_values_"] = np.asarray(sv, dtype=np.float32)
         meta_str["svd_solver_str"] = np.frombuffer(svd_solver.encode("utf-8"), dtype=np.uint8)
 
-    # Додаткові поля, якщо працюємо з підмножиною класів
+    # Додаткові поля, якщо працюємо з підмножиною класів — у ПОРЯДКУ, як у конфігу
     if target_classes and len(target_classes) < full_classes:
-        tc_sorted = np.array(sorted(set(map(int, target_classes))), dtype=np.int32)
-        meta_min["target_classes"] = tc_sorted
-        # збережемо також мапу class2new як два масиви (оригінал → новий)
-        orig = tc_sorted
-        new  = np.arange(orig.size, dtype=np.int32)
+        tc_ordered = np.array(list(map(int, target_classes)), dtype=np.int32)
+        meta_min["target_classes"] = tc_ordered
+        # явна мапа orig->new відповідно до class2new
+        orig = tc_ordered
+        new  = np.array([class2new[int(c)] for c in orig], dtype=np.int32)
         meta_min["class_map_orig"] = orig
         meta_min["class_map_new"]  = new
 

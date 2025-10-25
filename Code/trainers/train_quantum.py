@@ -382,11 +382,11 @@ def _build_loaders(cfg: Dict[str, Any], seed: int, logger) -> Tuple[DataLoader, 
     if (len(val_ds) == 0):
         val_loader = None
         logger.error("validation is absent")
-
     
     if (len(train_ds) == 0):
         train_loader = None
         logger.error("training is absent")
+        raise RuntimeError("Empty training dataset")
 
     # Детермінізм для shuffle та воркерів
     g = torch.Generator().manual_seed(seed)

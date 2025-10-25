@@ -172,3 +172,47 @@ ValueError: [PhiDataset] Непідтримуваний формат: .npy (оч
 2025-10-24T23:32:20+0300 | INFO | qna | [PhiDataset] φ clip-rate≈0.0000 (|φ| близько angle_max=3.14159), діапазон≈[-3.12161, 3.06835]
 2025-10-24T23:32:20+0300 | INFO | qna | [QuantumClassifier] n_qubits=6, out_dim=12, n_classes=4 | device=default.qubit, shots=None, layers=2, topology=ring, encoding=ry, meas=ZX, diff=adjoint, reupload=True
 2025-10-24T23:32:20+0300 | WARNING | qna | [QuantumClassifier] quantum.shots is None (analytic mode). Шум від шотів відсутній; DocPS/шум-орієнтований QNA не матиме ефекту.
+2025-10-25T05:38:47+0300 | INFO | qna | seed_everything: встановлено сид=123 (random/numpy/torch)
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] init: mode=train | path=None | suf='' | use_suf=True | target_classes=None
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] init: cfg pca.dim=4
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] mode=train | N=32, n_qubits=4, n_classes=3 | |phi|_min=-3.12161, |phi|_max=2.89374, |phi|_mean≈1.47726
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] Розподіл класів: [16, 8, 8]
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] φ clip-rate≈0.0000 (|φ| близько angle_max=3.14159), діапазон≈[-3.12161, 2.89374]
+2025-10-25T05:38:47+0300 | INFO | qna | [QuantumClassifier] n_qubits=4, out_dim=4, n_classes=3 | device=default.qubit, shots=None, layers=2, topology=ring, encoding=ry, meas=Z, diff=adjoint, reupload=True
+2025-10-25T05:38:47+0300 | WARNING | qna | [QuantumClassifier] quantum.shots is None (analytic mode). Шум від шотів відсутній; DocPS/шум-орієнтований QNA не матиме ефекту.
+2025-10-25T05:38:48+0300 | INFO | qna | seed_everything: встановлено сид=123 (random/numpy/torch)
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] init: mode=train | path=None | suf='' | use_suf=True | target_classes=None
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] init: cfg pca.dim=8
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] mode=train | N=32, n_qubits=8, n_classes=10 | |phi|_min=-3.12161, |phi|_max=3.10435, |phi|_mean≈1.55326
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] Розподіл класів: [3, 4, 6, 2, 3, 2, 3, 3, 4, 2]
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] φ clip-rate≈0.0000 (|φ| близько angle_max=3.14159), діапазон≈[-3.12161, 3.10435]
+2025-10-25T05:38:48+0300 | INFO | qna | seed_everything: встановлено сид=123 (random/numpy/torch)
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] init: mode=train | path=None | suf='' | use_suf=True | target_classes=None
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] init: cfg pca.dim=8
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] mode=train | N=32, n_qubits=8, n_classes=3 | |phi|_min=-3.12161, |phi|_max=3.10435, |phi|_mean≈1.55326
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] Розподіл класів: [13, 7, 12]
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] φ clip-rate≈0.0000 (|φ| близько angle_max=3.14159), діапазон≈[-3.12161, 3.10435]
+2025-10-25T05:38:48+0300 | INFO | qna | [QuantumClassifier] n_qubits=8, out_dim=8, n_classes=3 | device=default.qubit, shots=None, layers=2, topology=ring, encoding=ry, meas=Z, diff=adjoint, reupload=True
+2025-10-25T05:38:48+0300 | INFO | qna | seed_everything: встановлено сид=123 (random/numpy/torch)
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] init: mode=train | path=None | suf='' | use_suf=True | target_classes=None
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] init: cfg pca.dim=8
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] mode=train | N=32, n_qubits=8, n_classes=3 | |phi|_min=-3.12161, |phi|_max=3.10435, |phi|_mean≈1.55326
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] Розподіл класів: [13, 7, 12]
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] φ clip-rate≈0.0000 (|φ| близько angle_max=3.14159), діапазон≈[-3.12161, 3.10435]
+2025-10-25T05:38:48+0300 | INFO | qna | [QuantumClassifier] n_qubits=8, out_dim=16, n_classes=3 | device=default.qubit, shots=None, layers=2, topology=ring, encoding=ry, meas=ZX, diff=adjoint, reupload=True
+2025-10-25T05:38:48+0300 | INFO | qna | seed_everything: встановлено сид=123 (random/numpy/torch)
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] init: mode=train | path=None | suf='' | use_suf=True | target_classes=None
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] init: cfg pca.dim=6
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] mode=train | N=32, n_qubits=6, n_classes=4 | |phi|_min=-3.12161, |phi|_max=3.06835, |phi|_mean≈1.55760
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] Розподіл класів: [12, 11, 2, 7]
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] φ clip-rate≈0.0000 (|φ| близько angle_max=3.14159), діапазон≈[-3.12161, 3.06835]
+2025-10-25T05:38:48+0300 | INFO | qna | [QuantumClassifier] n_qubits=6, out_dim=6, n_classes=4 | device=default.qubit, shots=None, layers=2, topology=ring, encoding=ry, meas=Z, diff=adjoint, reupload=True
+2025-10-25T05:38:48+0300 | WARNING | qna | [QuantumClassifier] quantum.shots is None (analytic mode). Шум від шотів відсутній; DocPS/шум-орієнтований QNA не матиме ефекту.
+2025-10-25T05:38:49+0300 | INFO | qna | seed_everything: встановлено сид=123 (random/numpy/torch)
+2025-10-25T05:38:49+0300 | INFO | qna | [PhiDataset] init: mode=train | path=None | suf='' | use_suf=True | target_classes=None
+2025-10-25T05:38:49+0300 | INFO | qna | [PhiDataset] init: cfg pca.dim=6
+2025-10-25T05:38:49+0300 | INFO | qna | [PhiDataset] mode=train | N=32, n_qubits=6, n_classes=4 | |phi|_min=-3.12161, |phi|_max=3.06835, |phi|_mean≈1.55760
+2025-10-25T05:38:49+0300 | INFO | qna | [PhiDataset] Розподіл класів: [12, 11, 2, 7]
+2025-10-25T05:38:49+0300 | INFO | qna | [PhiDataset] φ clip-rate≈0.0000 (|φ| близько angle_max=3.14159), діапазон≈[-3.12161, 3.06835]
+2025-10-25T05:38:49+0300 | INFO | qna | [QuantumClassifier] n_qubits=6, out_dim=12, n_classes=4 | device=default.qubit, shots=None, layers=2, topology=ring, encoding=ry, meas=ZX, diff=adjoint, reupload=True
+2025-10-25T05:38:49+0300 | WARNING | qna | [QuantumClassifier] quantum.shots is None (analytic mode). Шум від шотів відсутній; DocPS/шум-орієнтований QNA не матиме ефекту.

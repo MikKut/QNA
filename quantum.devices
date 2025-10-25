@@ -2099,3 +2099,115 @@ TypeError: int() argument must be a string, a bytes-like object or a real number
 2025-10-24T23:32:20+0300 | INFO | qna | [PhiDataset] φ clip-rate≈0.0000 (|φ| близько angle_max=3.14159), діапазон≈[-3.12161, 3.06835]
 2025-10-24T23:32:20+0300 | INFO | qna | [QuantumClassifier] n_qubits=6, out_dim=12, n_classes=4 | device=default.qubit, shots=None, layers=2, topology=ring, encoding=ry, meas=ZX, diff=adjoint, reupload=True
 2025-10-24T23:32:20+0300 | WARNING | qna | [QuantumClassifier] quantum.shots is None (analytic mode). Шум від шотів відсутній; DocPS/шум-орієнтований QNA не матиме ефекту.
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] init: mode=train | path='C:\\Users\\Михайло\\AppData\\Local\\Temp\\pytest-of-Михайло\\pytest-31\\test_from_xpca_cached0\\preproc' | suf='' | use_suf=True | target_classes=None
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] init: cfg pca.dim=8
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] y_path=C:\Users\Михайло\AppData\Local\Temp\pytest-of-Михайло\pytest-31\test_from_xpca_cached0\preproc\y_train.npy
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] y: shape=(100,), dtype=int64, uniques={0: 8, 1: 12, 2: 5, 3: 10, 4: 3, 5: 10, 6: 7, 7: 15, 8: 14, 9: 16}
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] Z candidates: ['C:\\Users\\Михайло\\AppData\\Local\\Temp\\pytest-of-Михайло\\pytest-31\\test_from_xpca_cached0\\preproc\\Z_train_std.npy', 'C:\\Users\\Михайло\\AppData\\Local\\Temp\\pytest-of-Михайло\\pytest-31\\test_from_xpca_cached0\\preproc\\Z_train_std.npy.fp'] | chosen: None
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] X_pca path=C:\Users\Михайло\AppData\Local\Temp\pytest-of-Михайло\pytest-31\test_from_xpca_cached0\preproc\X_train_pca.npy
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] preprocess_stats=C:\Users\Михайло\AppData\Local\Temp\pytest-of-Михайло\pytest-31\test_from_xpca_cached0\preproc\preprocess_stats.yaml
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] X_pca dim=8, scaler.pca_dim=8
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] Побудовано φ з X_pca: AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793, 'no_clip': False}) | φ∈[-3.142, 3.142], clip-rate≈1.12% | mode=train | cache=True
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] meta: {'mode': 'train', 'source': 'X_pca', 'encoder': "AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793, 'no_clip': False})", 'n_qubits': 8, 'cached': True}
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] mode=train | N=100, n_qubits=8, n_classes=10 | |phi|_min=-3.14159, |phi|_max=3.14159, |phi|_mean≈1.01193
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] Розподіл класів: [8, 12, 5, 10, 3, 10, 7, 15, 14, 16]
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] φ clip-rate≈0.0112 (|φ| близько angle_max=3.14159), діапазон≈[-3.14159, 3.14159]
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] init: mode=train | path='C:\\Users\\Михайло\\AppData\\Local\\Temp\\pytest-of-Михайло\\pytest-31\\test_from_xpca_lazy0\\preproc' | suf='' | use_suf=True | target_classes=None
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] init: cfg pca.dim=8
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] y_path=C:\Users\Михайло\AppData\Local\Temp\pytest-of-Михайло\pytest-31\test_from_xpca_lazy0\preproc\y_train.npy
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] y: shape=(100,), dtype=int64, uniques={0: 8, 1: 12, 2: 5, 3: 10, 4: 3, 5: 10, 6: 7, 7: 15, 8: 14, 9: 16}
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] Z candidates: ['C:\\Users\\Михайло\\AppData\\Local\\Temp\\pytest-of-Михайло\\pytest-31\\test_from_xpca_lazy0\\preproc\\Z_train_std.npy', 'C:\\Users\\Михайло\\AppData\\Local\\Temp\\pytest-of-Михайло\\pytest-31\\test_from_xpca_lazy0\\preproc\\Z_train_std.npy.fp'] | chosen: None
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] X_pca path=C:\Users\Михайло\AppData\Local\Temp\pytest-of-Михайло\pytest-31\test_from_xpca_lazy0\preproc\X_train_pca.npy
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] preprocess_stats=C:\Users\Михайло\AppData\Local\Temp\pytest-of-Михайло\pytest-31\test_from_xpca_lazy0\preproc\preprocess_stats.yaml
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] X_pca dim=8, scaler.pca_dim=8
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] LAZY mode enabled | source=X_pca
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] lazy source: X_pca (shape=(100, 8)), scaler.pca_dim=8
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] Побудовано φ з X_pca: AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793, 'no_clip': False}) | φ∈[-3.142, 3.142], clip-rate≈1.12% | mode=train | cache=False
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] meta: {'mode': 'train', 'source': 'X_pca', 'encoder': "AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793, 'no_clip': False})", 'n_qubits': 8, 'cached': False}
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] mode=train | N=100, n_qubits=8, n_classes=10 | |phi|_min=-3.14159, |phi|_max=3.14159, |phi|_mean≈—
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] Розподіл класів: [8, 12, 5, 10, 3, 10, 7, 15, 14, 16]
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] φ clip-rate≈0.0112 (|φ| близько angle_max=3.14159), діапазон≈[-3.14159, 3.14159]
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] init: mode=train | path='C:\\Users\\Михайло\\AppData\\Local\\Temp\\pytest-of-Михайло\\pytest-31\\test_from_z_cached_prioritized0\\preproc' | suf='' | use_suf=True | target_classes=None
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] init: cfg pca.dim=8
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] y_path=C:\Users\Михайло\AppData\Local\Temp\pytest-of-Михайло\pytest-31\test_from_z_cached_prioritized0\preproc\y_train.npy
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] y: shape=(100,), dtype=int64, uniques={0: 8, 1: 12, 2: 5, 3: 10, 4: 3, 5: 10, 6: 7, 7: 15, 8: 14, 9: 16}
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] Z candidates: ['C:\\Users\\Михайло\\AppData\\Local\\Temp\\pytest-of-Михайло\\pytest-31\\test_from_z_cached_prioritized0\\preproc\\Z_train_std.npy', 'C:\\Users\\Михайло\\AppData\\Local\\Temp\\pytest-of-Михайло\\pytest-31\\test_from_z_cached_prioritized0\\preproc\\Z_train_std.npy.fp'] | chosen: C:\Users\Михайло\AppData\Local\Temp\pytest-of-Михайло\pytest-31\test_from_z_cached_prioritized0\preproc\Z_train_std.npy
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] Побудовано φ з Z: AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793, 'no_clip': False}) | φ∈[-3.142, 3.142], clip-rate≈1.12% | mode=train | cache=True
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] meta: {'mode': 'train', 'source': 'Z', 'encoder': "AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793, 'no_clip': False})", 'n_qubits': 8, 'cached': True}
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] mode=train | N=100, n_qubits=8, n_classes=10 | |phi|_min=-3.14159, |phi|_max=3.14159, |phi|_mean≈1.01193
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] Розподіл класів: [8, 12, 5, 10, 3, 10, 7, 15, 14, 16]
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] φ clip-rate≈0.0112 (|φ| близько angle_max=3.14159), діапазон≈[-3.14159, 3.14159]
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] init: mode=train | path='C:\\Users\\Михайло\\AppData\\Local\\Temp\\pytest-of-Михайло\\pytest-31\\test_target_classes_with_suffi0\\preproc' | suf='_cls3589' | use_suf=True | target_classes=[3, 5, 8, 9]
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] init: cfg pca.dim=8
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] y_path=C:\Users\Михайло\AppData\Local\Temp\pytest-of-Михайло\pytest-31\test_target_classes_with_suffi0\preproc\y_train_cls3589.npy
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] y: shape=(50,), dtype=int64, uniques={3: 10, 5: 10, 8: 14, 9: 16}
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] Z candidates: ['C:\\Users\\Михайло\\AppData\\Local\\Temp\\pytest-of-Михайло\\pytest-31\\test_target_classes_with_suffi0\\preproc\\Z_train_std_cls3589.npy', 'C:\\Users\\Михайло\\AppData\\Local\\Temp\\pytest-of-Михайло\\pytest-31\\test_target_classes_with_suffi0\\preproc\\Z_train_std.npy_cls3589.fp'] | chosen: C:\Users\Михайло\AppData\Local\Temp\pytest-of-Михайло\pytest-31\test_target_classes_with_suffi0\preproc\Z_train_std_cls3589.npy
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] Побудовано φ з Z: AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793, 'no_clip': False}) | φ∈[-3.142, 3.131], clip-rate≈0.50% | mode=train | cache=True
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] meta: {'mode': 'train', 'source': 'Z', 'encoder': "AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793, 'no_clip': False})", 'n_qubits': 8, 'cached': True}
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] mode=train | N=50, n_qubits=8, n_classes=4 | |phi|_min=-3.14159, |phi|_max=3.13132, |phi|_mean≈0.99169
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] Розподіл класів: [10, 10, 14, 16]
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] φ clip-rate≈0.0050 (|φ| близько angle_max=3.14159), діапазон≈[-3.14159, 3.13132]
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] init: mode=train | path='C:\\Users\\Михайло\\AppData\\Local\\Temp\\pytest-of-Михайло\\pytest-31\\test_target_classes_without_su0\\preproc' | suf='' | use_suf=False | target_classes=[0, 1]
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] init: cfg pca.dim=8
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] y_path=C:\Users\Михайло\AppData\Local\Temp\pytest-of-Михайло\pytest-31\test_target_classes_without_su0\preproc\y_train.npy
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] y: shape=(100,), dtype=int64, uniques={0: 8, 1: 12, 2: 5, 3: 10, 4: 3, 5: 10, 6: 7, 7: 15, 8: 14, 9: 16}
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] Z candidates: ['C:\\Users\\Михайло\\AppData\\Local\\Temp\\pytest-of-Михайло\\pytest-31\\test_target_classes_without_su0\\preproc\\Z_train_std.npy', 'C:\\Users\\Михайло\\AppData\\Local\\Temp\\pytest-of-Михайло\\pytest-31\\test_target_classes_without_su0\\preproc\\Z_train_std.npy.fp'] | chosen: None
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] X_pca path=C:\Users\Михайло\AppData\Local\Temp\pytest-of-Михайло\pytest-31\test_target_classes_without_su0\preproc\X_train_pca.npy
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] preprocess_stats=C:\Users\Михайло\AppData\Local\Temp\pytest-of-Михайло\pytest-31\test_target_classes_without_su0\preproc\preprocess_stats.yaml
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] X_pca dim=8, scaler.pca_dim=8
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] Побудовано φ з X_pca: AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793, 'no_clip': False}) | φ∈[-3.142, 3.142], clip-rate≈1.12% | mode=train | cache=True
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] meta: {'mode': 'train', 'source': 'X_pca', 'encoder': "AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793, 'no_clip': False})", 'n_qubits': 8, 'cached': True}
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] mode=train | N=20, n_qubits=8, n_classes=2 | |phi|_min=-3.14159, |phi|_max=3.09931, |phi|_mean≈1.04678
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] Розподіл класів: [8, 12]
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] φ clip-rate≈0.0063 (|φ| близько angle_max=3.14159), діапазон≈[-3.14159, 3.09931]
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] init: mode=train | path='C:\\Users\\Михайло\\AppData\\Local\\Temp\\pytest-of-Михайло\\pytest-31\\test_missing_stats_with_only_x0\\preproc' | suf='' | use_suf=True | target_classes=None
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] init: cfg pca.dim=8
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] y_path=C:\Users\Михайло\AppData\Local\Temp\pytest-of-Михайло\pytest-31\test_missing_stats_with_only_x0\preproc\y_train.npy
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] y: shape=(100,), dtype=int64, uniques={0: 8, 1: 12, 2: 5, 3: 10, 4: 3, 5: 10, 6: 7, 7: 15, 8: 14, 9: 16}
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] Z candidates: ['C:\\Users\\Михайло\\AppData\\Local\\Temp\\pytest-of-Михайло\\pytest-31\\test_missing_stats_with_only_x0\\preproc\\Z_train_std.npy', 'C:\\Users\\Михайло\\AppData\\Local\\Temp\\pytest-of-Михайло\\pytest-31\\test_missing_stats_with_only_x0\\preproc\\Z_train_std.npy.fp'] | chosen: None
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] X_pca path=C:\Users\Михайло\AppData\Local\Temp\pytest-of-Михайло\pytest-31\test_missing_stats_with_only_x0\preproc\X_train_pca.npy
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] preprocess_stats=C:\Users\Михайло\AppData\Local\Temp\pytest-of-Михайло\pytest-31\test_missing_stats_with_only_x0\preproc\preprocess_stats.yaml
+2025-10-25T05:38:47+0300 | INFO | qna | seed_everything: встановлено сид=123 (random/numpy/torch)
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] init: mode=train | path=None | suf='' | use_suf=True | target_classes=None
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] init: cfg pca.dim=4
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] mode=train | N=32, n_qubits=4, n_classes=3 | |phi|_min=-3.12161, |phi|_max=2.89374, |phi|_mean≈1.47726
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] Розподіл класів: [16, 8, 8]
+2025-10-25T05:38:47+0300 | INFO | qna | [PhiDataset] φ clip-rate≈0.0000 (|φ| близько angle_max=3.14159), діапазон≈[-3.12161, 2.89374]
+2025-10-25T05:38:47+0300 | INFO | qna | [QuantumClassifier] n_qubits=4, out_dim=4, n_classes=3 | device=default.qubit, shots=None, layers=2, topology=ring, encoding=ry, meas=Z, diff=adjoint, reupload=True
+2025-10-25T05:38:47+0300 | WARNING | qna | [QuantumClassifier] quantum.shots is None (analytic mode). Шум від шотів відсутній; DocPS/шум-орієнтований QNA не матиме ефекту.
+2025-10-25T05:38:48+0300 | INFO | qna | seed_everything: встановлено сид=123 (random/numpy/torch)
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] init: mode=train | path=None | suf='' | use_suf=True | target_classes=None
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] init: cfg pca.dim=8
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] mode=train | N=32, n_qubits=8, n_classes=10 | |phi|_min=-3.12161, |phi|_max=3.10435, |phi|_mean≈1.55326
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] Розподіл класів: [3, 4, 6, 2, 3, 2, 3, 3, 4, 2]
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] φ clip-rate≈0.0000 (|φ| близько angle_max=3.14159), діапазон≈[-3.12161, 3.10435]
+2025-10-25T05:38:48+0300 | INFO | qna | seed_everything: встановлено сид=123 (random/numpy/torch)
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] init: mode=train | path=None | suf='' | use_suf=True | target_classes=None
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] init: cfg pca.dim=8
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] mode=train | N=32, n_qubits=8, n_classes=3 | |phi|_min=-3.12161, |phi|_max=3.10435, |phi|_mean≈1.55326
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] Розподіл класів: [13, 7, 12]
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] φ clip-rate≈0.0000 (|φ| близько angle_max=3.14159), діапазон≈[-3.12161, 3.10435]
+2025-10-25T05:38:48+0300 | INFO | qna | [QuantumClassifier] n_qubits=8, out_dim=8, n_classes=3 | device=default.qubit, shots=None, layers=2, topology=ring, encoding=ry, meas=Z, diff=adjoint, reupload=True
+2025-10-25T05:38:48+0300 | INFO | qna | seed_everything: встановлено сид=123 (random/numpy/torch)
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] init: mode=train | path=None | suf='' | use_suf=True | target_classes=None
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] init: cfg pca.dim=8
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] mode=train | N=32, n_qubits=8, n_classes=3 | |phi|_min=-3.12161, |phi|_max=3.10435, |phi|_mean≈1.55326
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] Розподіл класів: [13, 7, 12]
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] φ clip-rate≈0.0000 (|φ| близько angle_max=3.14159), діапазон≈[-3.12161, 3.10435]
+2025-10-25T05:38:48+0300 | INFO | qna | [QuantumClassifier] n_qubits=8, out_dim=16, n_classes=3 | device=default.qubit, shots=None, layers=2, topology=ring, encoding=ry, meas=ZX, diff=adjoint, reupload=True
+2025-10-25T05:38:48+0300 | INFO | qna | seed_everything: встановлено сид=123 (random/numpy/torch)
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] init: mode=train | path=None | suf='' | use_suf=True | target_classes=None
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] init: cfg pca.dim=6
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] mode=train | N=32, n_qubits=6, n_classes=4 | |phi|_min=-3.12161, |phi|_max=3.06835, |phi|_mean≈1.55760
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] Розподіл класів: [12, 11, 2, 7]
+2025-10-25T05:38:48+0300 | INFO | qna | [PhiDataset] φ clip-rate≈0.0000 (|φ| близько angle_max=3.14159), діапазон≈[-3.12161, 3.06835]
+2025-10-25T05:38:48+0300 | INFO | qna | [QuantumClassifier] n_qubits=6, out_dim=6, n_classes=4 | device=default.qubit, shots=None, layers=2, topology=ring, encoding=ry, meas=Z, diff=adjoint, reupload=True
+2025-10-25T05:38:48+0300 | WARNING | qna | [QuantumClassifier] quantum.shots is None (analytic mode). Шум від шотів відсутній; DocPS/шум-орієнтований QNA не матиме ефекту.
+2025-10-25T05:38:49+0300 | INFO | qna | seed_everything: встановлено сид=123 (random/numpy/torch)
+2025-10-25T05:38:49+0300 | INFO | qna | [PhiDataset] init: mode=train | path=None | suf='' | use_suf=True | target_classes=None
+2025-10-25T05:38:49+0300 | INFO | qna | [PhiDataset] init: cfg pca.dim=6
+2025-10-25T05:38:49+0300 | INFO | qna | [PhiDataset] mode=train | N=32, n_qubits=6, n_classes=4 | |phi|_min=-3.12161, |phi|_max=3.06835, |phi|_mean≈1.55760
+2025-10-25T05:38:49+0300 | INFO | qna | [PhiDataset] Розподіл класів: [12, 11, 2, 7]
+2025-10-25T05:38:49+0300 | INFO | qna | [PhiDataset] φ clip-rate≈0.0000 (|φ| близько angle_max=3.14159), діапазон≈[-3.12161, 3.06835]
+2025-10-25T05:38:49+0300 | INFO | qna | [QuantumClassifier] n_qubits=6, out_dim=12, n_classes=4 | device=default.qubit, shots=None, layers=2, topology=ring, encoding=ry, meas=ZX, diff=adjoint, reupload=True
+2025-10-25T05:38:49+0300 | WARNING | qna | [QuantumClassifier] quantum.shots is None (analytic mode). Шум від шотів відсутній; DocPS/шум-орієнтований QNA не матиме ефекту.

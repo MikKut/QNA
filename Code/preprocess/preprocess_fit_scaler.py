@@ -146,8 +146,10 @@ def main() -> None:
     z_fp_suffix = ".fp.yaml"  # sidecar до .npy
 
     # Рання перевірка на перезапис
-    for out_path in [stats_out_path, z_train_path, z_val_path, z_test_path]:
-        check_overwrite(out_path, overwrite=overwrite)
+    check_overwrite(stats_out_path, overwrite=overwrite)
+    if zcache_enable:
+        for out_path in [z_train_path, z_val_path, z_test_path]:
+            check_overwrite(out_path, overwrite=overwrite)
 
     # ---------- dtype ----------
     dtype = str(cfg.get("pixels", {}).get("dtype", "float32"))
@@ -202,11 +204,11 @@ def main() -> None:
     extras: Dict[str, Any] = {"robust_kind": robust_kind, "c_mad": c_mad, "c_iqr": c_iqr}
     # якщо працюємо з підмножиною класів — додамо в fingerprint/meta
     if target_classes and len(target_classes) < full_classes:
-        tc_sorted = sorted(set(map(int, target_classes)))
+        tc_ordered = list(map(int, target_classes))  # порядок як у конфігу
         extras.update({
-            "target_classes": tc_sorted,
-            "class_map_orig": tc_sorted,
-            "class_map_new": list(range(len(tc_sorted)))
+            "target_classes": tc_ordered,
+            "class_map_orig": tc_ordered,
+            "class_map_new": list(range(len(tc_ordered)))
         })
 
     fp = build_fingerprint(method=method, pca_dim=pca_dim, eps=eps, seed=seed, stats=stats, extras=extras)
@@ -231,10 +233,10 @@ def main() -> None:
 
     # метадані про підмножину класів у YAML (самодокументація)
     if target_classes and len(target_classes) < full_classes:
-        tc_sorted = np.array(sorted(set(map(int, target_classes))), dtype=np.int32)
-        stats_payload["target_classes"] = tc_sorted.tolist()
-        stats_payload["class_map_orig"] = tc_sorted.tolist()
-        stats_payload["class_map_new"]  = list(range(tc_sorted.size))
+        tc_ordered = list(map(int, target_classes))
+        stats_payload["target_classes"] = tc_ordered
+        stats_payload["class_map_orig"] = tc_ordered
+        stats_payload["class_map_new"]  = list(range(len(tc_ordered)))
 
     ensure_parent_dir(stats_out_path)
     save_yaml(stats_payload, stats_out_path, overwrite=overwrite)

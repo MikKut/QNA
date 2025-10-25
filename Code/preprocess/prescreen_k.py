@@ -1,34 +1,15 @@
 # Code/preprocess/prescreen_k.py
-"""
-Prescreen k: швидко оцінює k для кутового кодування на обраному спліті,
-використовуючи z-кеш (з fingerprint-перевіркою) або обчислення z на льоту.
-
-Вихід:
-- друк у консоль: рекомендований k, емпіричний k*, clip_rate на k
-- YAML-звіт у paths.diag_dir: prescreen_k_{split}.yaml
-- (опц.) --write-config: оновлює angles.k у config.yaml
-
-Використання (приклад):
-  python Code/prescreen_k.py \
-      --config config.yaml \
-      --split auto \
-      --k-grid 1.5,2.0,2.5,3.0,3.5 \
-      --use-cache auto \
-      --target-clip 0.02 \
-      --write-config
-"""
-
 from __future__ import annotations
 
 import argparse
 from pathlib import Path
-from typing import Dict, List, Literal, Optional, Sequence, Tuple
+from typing import Dict, Literal, Optional, Sequence, Tuple
 
 import numpy as np
 
 from Code.utils.io_utils import (
-    load_project_config, load_yaml, save_yaml, load_npy, save_json,
-    ensure_dir, assert_no_nan, class_suffix
+    load_project_config, load_yaml, save_yaml, load_npy,
+    ensure_dir, assert_no_nan
 )
 from Code.logger import setup_logger
 from Code.preprocess.transforms import PCScaler, validate_z_cache_from_stats
@@ -36,7 +17,6 @@ from Code.utils.angle_metrics import clip_rate_grid_z, suggest_k_from_target_cli
 
 
 # ---------------------- CLI ----------------------
-
 def _parse_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser(description="Prescreen k (кутовий бюджет) за валід/трейн split")
     ap.add_argument("--config", type=str, default="config.yaml", help="Шлях до config.yaml")
@@ -49,6 +29,27 @@ def _parse_args() -> argparse.Namespace:
 
 
 # ---------------------- helpers ----------------------
+def _resolve_config_path(raw: str) -> Path:
+    """Віддзеркалює стратегію io_utils.load_project_config: перевіряє кілька типових місць."""
+    p = Path(raw)
+    if p.is_absolute() and p.exists():
+        return p
+
+    tried = []
+    repo_root = Path(__file__).resolve().parents[2]
+
+    candidates = [
+        Path.cwd() / p,                         # поточна директорія
+        repo_root / p,                          # корінь репо + відносний шлях
+        repo_root / "Code" / p,                 # всередині Code/
+        repo_root / "Code" / "configs" / p.name # Code/configs/<name>
+    ]
+    for c in candidates:
+        tried.append(c)
+        if c.exists():
+            return c
+    raise FileNotFoundError("Config file not found. Tried:\n" + "\n".join(map(str, tried)))
+
 
 def _paths_for_split(cfg: Dict, split: str) -> Tuple[str, str, str]:
     p = cfg.get("paths", {})
@@ -80,16 +81,27 @@ def _load_or_compute_z(
     X_path, Z_path, y_path = _paths_for_split(cfg, split)
     pca_dim = int(cfg.get("pca", {}).get("dim", 8))
 
-    # 0) зчитаємо y (для маски класів — і при Z-кеші, і при X_pca)
-    target_classes = cfg.get("data", {}).get("target_classes", None)
-    y = None
+    # 0) labels (для фільтру класів, якщо потрібно)
+    target_classes: Optional[Sequence[int]] = cfg.get("data", {}).get("target_classes", None)  # type: ignore[assignment]
+    y: Optional[np.ndarray] = None
     if target_classes:
         if not Path(y_path).exists():
             logger.warning("Відсутній y_* для split=%s: %s — фільтрування класів неможливе.", split, y_path)
         else:
             y = load_npy(y_path).astype(np.int64, copy=False)
+            # EARLY GUARD: якщо y вже компактні 0..C-1 і довжина target_classes == C → не фільтруємо вдруге
+            if y.size > 0:
+                u = np.unique(y)
+                C = int(u.max()) + 1
+                compact_ok = set(u.tolist()) == set(range(C))
+                if compact_ok and isinstance(target_classes, (list, tuple)) and len(target_classes) == C:
+                    logger.warning(
+                        "[prescreen_k] y уже компактні 0..%d, а target_classes=%s — пропускаю фільтр класів.",
+                        C - 1, list(target_classes)
+                    )
+                    target_classes = None
 
-    # 1) спроба взяти Z з кешу
+    # 1) кеш Z
     if use_cache in ("auto", "yes"):
         sidecar = str(Path(Z_path).with_suffix(Path(Z_path).suffix + ".fp.yaml"))
         if Path(Z_path).exists():
@@ -109,8 +121,7 @@ def _load_or_compute_z(
                         assert_no_nan(Z, f"{Path(Z_path).name}")
                     if Z.ndim == 2 and Z.shape[1] == pca_dim:
                         logger.info("Використовуємо Z-кеш для split=%s: %s", split, Z_path)
-                        # ⬇️ застосуємо фільтр класів, якщо треба
-                        if y is not None and isinstance(target_classes, (list, tuple)) and len(target_classes) < 10:
+                        if y is not None and target_classes and len(target_classes) < 10:
                             mask = np.isin(y, list(map(int, target_classes)))
                             Z = Z[mask]
                             logger.info("Фільтр класів застосовано до Z: залишилось %d рядків.", Z.shape[0])
@@ -133,8 +144,7 @@ def _load_or_compute_z(
     if check_nan:
         assert_no_nan(X, f"{Path(X_path).name}")
 
-    # ⬇️ фільтр класів для X, якщо треба
-    if y is not None and isinstance(target_classes, (list, tuple)) and len(target_classes) < 10:
+    if y is not None and target_classes and len(target_classes) < 10:
         mask = np.isin(y, list(map(int, target_classes)))
         X = X[mask]
         logger.info("Фільтр класів застосовано до X_pca: залишилось %d рядків.", X.shape[0])
@@ -144,6 +154,7 @@ def _load_or_compute_z(
         assert_no_nan(Z, f"Z_{split}_std")
     return np.asarray(Z)
 
+
 def _choose_k_from_grid(k_arr: np.ndarray, overall_clip: np.ndarray, target: float) -> float:
     ok = np.where(overall_clip < float(target))[0]
     if ok.size > 0:
@@ -152,10 +163,14 @@ def _choose_k_from_grid(k_arr: np.ndarray, overall_clip: np.ndarray, target: flo
 
 
 # ---------------------- main ----------------------
-
 def main() -> None:
     args = _parse_args()
-    cfg = load_project_config(args.config)
+
+    # 1) Резолвимо шлях до конфіга так само, як io_utils
+    config_path = _resolve_config_path(args.config)
+
+    # 2) Читаємо конфіг саме за цим шляхом
+    cfg = load_project_config(str(config_path))
 
     # логер
     log_path = cfg.get("logging", {}).get("preprocess_log", "./runs/preproc/preprocess.log")
@@ -176,11 +191,11 @@ def main() -> None:
         x_val = cfg.get("paths", {}).get("X_val_pca", "./data/X_val_pca.npy")
         split = "val" if Path(x_val).exists() else "train"
 
-    # завантажуємо скейлер
+    # скейлер
     stats_yaml = load_yaml(stats_path)
     scaler = PCScaler.from_dict(stats_yaml)
 
-    # дістаємо z
+    # Z
     Z = _load_or_compute_z(
         cfg=cfg,
         stats_yaml_path=stats_path,
@@ -218,17 +233,16 @@ def main() -> None:
     print(f"[prescreen_k] split={split}  k_rec={k_rec:.3f}  k_emp~={k_emp:.3f}  clip@k_rec={clip_at_krec:.4f}")
     print(f"[prescreen_k] report → {out_yaml}")
 
-    # (опц.) оновити angles.k в конфігу
+    # (опц.) оновити angles.k у ТОМУ Ж конфізі, який реально читаємо
     if args.write_config:
-        
-        cfg_mod = load_yaml(args.config)
+        cfg_mod = load_yaml(str(config_path))
         angles = dict(cfg_mod.get("angles", {}))
         angles["k"] = float(k_rec)
         cfg_mod["angles"] = angles
-        save_yaml(cfg_mod, args.config)
+        save_yaml(cfg_mod, str(config_path), True)
         print(f"[prescreen_k] config.yaml оновлено: angles.k={k_rec:.3f}")
 
 
 if __name__ == "__main__":
-    import numpy as np  # noqa: F401  (гарантуємо наявність np)
+    import numpy as np  # noqa: F401
     main()
