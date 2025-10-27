@@ -1,7 +1,6 @@
 project:
   name: QNA-QNN-MNIST
   seed: 42
-  output_root: ./runs
   deterministic_torch: false
 paths:
   data_root: ./data
@@ -142,7 +141,7 @@ optim:
   amsgrad: false
   maximize: false
   qna:
-    lambda_var: 0.0 # 0.0 - classical one. > 0 - qna
+    lambda_var: 1.0e-3 # 0.0 - classical one. > 0 - qna
     lr_min_mult: 0.1
     lr_max_mult: 1.0
     mode: param
