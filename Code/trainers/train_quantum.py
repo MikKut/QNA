@@ -683,7 +683,6 @@ def main(argv: Optional[list[str]] = None) -> int:
             # Тренувальний цикл
             epochs = int(config.get("training", {}).get("epochs", 20))
             best_val = float("inf")
-            best_val_acc = 0.0
             save_every = int(config.get("logging", {}).get("save_every_epochs", 0))
 
             logger.info(

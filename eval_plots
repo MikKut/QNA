@@ -1,0 +1,19 @@
+2025-10-27T10:54:46+0200 | INFO | qna | Завантажено конфіг: D:\Code\QNA\QNA\runs\EXP_20251025_054444_optqnaadam_measzx_encry_nq8_k25_L2_shots100\config.snapshot.yaml
+2025-10-27T10:54:46+0200 | INFO | qna | [QuantumClassifier] n_qubits=8, out_dim=16, n_classes=4 | device=default.qubit, shots=100, layers=2, topology=ring, encoding=ry, meas=ZX, diff=parameter-shift, reupload=True
+2025-10-27T10:54:46+0200 | INFO | qna | Switch shots: 100 -> 2048 | meta={'axes': ('Z', 'X'), 'n_meas': 2, 'output_dim': 16, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 2048, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 16, 'var_dim': 0}
+2025-10-27T10:54:46+0200 | INFO | qna | [QuantumClassifier] shots set to 2048
+2025-10-27T10:54:46+0200 | INFO | qna | Eval shots → 2048
+2025-10-27T10:54:46+0200 | INFO | qna | [PhiDataset] init: mode=test | path='./data' | suf='_cls0123' | use_suf=True | target_classes=[0, 1, 2, 3]
+2025-10-27T10:54:46+0200 | INFO | qna | [PhiDataset] init: cfg pca.dim=8
+2025-10-27T10:54:46+0200 | INFO | qna | [PhiDataset] y_path=./data\y_test_cls0123.npy
+2025-10-27T10:54:46+0200 | INFO | qna | [PhiDataset] y: shape=(4157,), dtype=int64, uniques={0: 980, 1: 1135, 2: 1032, 3: 1010}
+2025-10-27T10:54:46+0200 | INFO | qna | [PhiDataset] Z candidates: ['./data\\Z_test_std_cls0123.npy', './data\\Z_test_std.npy_cls0123.fp'] | chosen: ./data\Z_test_std_cls0123.npy
+2025-10-27T10:54:46+0200 | WARNING | qna | [PhiDataset] AngleEncoder: ігнорую невідомі kwargs: ['clip']; дозволені=['angle_max', 'k', 'no_clip']
+2025-10-27T10:54:46+0200 | INFO | qna | [PhiDataset] Побудовано φ з Z: AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793}) | φ∈[-3.142, 3.142], clip-rate≈0.81% | mode=test | cache=True
+2025-10-27T10:54:46+0200 | INFO | qna | [PhiDataset] meta: {'mode': 'test', 'source': 'Z', 'encoder': "AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793})", 'n_qubits': 8, 'cached': True}
+2025-10-27T10:54:46+0200 | INFO | qna | [PhiDataset] mode=test | N=4157, n_qubits=8, n_classes=4 | |phi|_min=-3.14159, |phi|_max=3.14159, |phi|_mean≈1.01263
+2025-10-27T10:54:46+0200 | INFO | qna | [PhiDataset] Розподіл класів: [980, 1135, 1032, 1010]
+2025-10-27T10:54:46+0200 | INFO | qna | [PhiDataset] φ clip-rate≈0.0081 (|φ| близько angle_max=3.14159), діапазон≈[-3.14159, 3.14159]
+2025-10-27T10:55:37+0200 | INFO | qna | TEST: loss=0.7984, acc=0.707
+2025-10-27T10:55:40+0200 | INFO | qna | Графіки збережено до: D:\Code\QNA\QNA\runs\EXP_20251025_054444_optqnaadam_measzx_encry_nq8_k25_L2_shots100\figs
+2025-10-27T10:55:40+0200 | INFO | qna | Report: D:\Code\QNA\QNA\runs\EXP_20251025_054444_optqnaadam_measzx_encry_nq8_k25_L2_shots100\report.md
