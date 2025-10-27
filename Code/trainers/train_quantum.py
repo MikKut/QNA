@@ -373,19 +373,15 @@ def _set_model_seed(model, seed: int, logger=None) -> None:
 
 
 def _build_loaders(cfg: Dict[str, Any], seed: int, logger) -> Tuple[DataLoader, Optional[DataLoader]]:
-    batch_size = int(cfg.get("training", {}).get("batch_size", 64))
+    batch_size  = int(cfg.get("training", {}).get("batch_size", 64))
     num_workers = int(cfg.get("training", {}).get("num_workers", 0))
+    pin_mem     = bool(cfg.get("training", {}).get("pin_memory", torch.cuda.is_available()))
 
     train_ds = PhiDataset(cfg, mode="train", logger=logger)
-    val_ds = PhiDataset(cfg, mode="val", logger=logger)
+    val_ds   = PhiDataset(cfg, mode="val",   logger=logger)
 
-    if (len(val_ds) == 0):
-        val_loader = None
-        logger.error("validation is absent")
-    
-    if (len(train_ds) == 0):
-        train_loader = None
-        logger.error("training is absent")
+    if len(train_ds) == 0:
+        logger.error("Training split is empty — перевірте шляхи або препроцесинг.")
         raise RuntimeError("Empty training dataset")
 
     # Детермінізм для shuffle та воркерів
@@ -397,28 +393,32 @@ def _build_loaders(cfg: Dict[str, Any], seed: int, logger) -> Tuple[DataLoader, 
         batch_size=batch_size,
         shuffle=True,
         num_workers=num_workers,
-        pin_memory=False,
+        pin_memory=pin_mem,
         worker_init_fn=worker_init,
         generator=g,
         persistent_workers=(num_workers > 0),
     )
-    val_loader = DataLoader(
-        val_ds,
-        batch_size=batch_size,
-        shuffle=False,
-        num_workers=num_workers,
-        pin_memory=False,
-        worker_init_fn=worker_init,
-        generator=g,
-        persistent_workers=(num_workers > 0),
-    ) if val_ds is not None else None
 
-    # Лог розмірів
+    # Створюємо val_loader ТІЛЬКИ якщо є зразки
+    if len(val_ds) > 0:
+        val_loader = DataLoader(
+            val_ds,
+            batch_size=batch_size,
+            shuffle=False,
+            num_workers=num_workers,
+            pin_memory=pin_mem,
+            worker_init_fn=worker_init,
+            generator=g,
+            persistent_workers=(num_workers > 0),
+        )
+    else:
+        val_loader = None
+        logger.warning("Validation split is empty — працюємо без валідації / EarlyStopping.")
+
     try:
-        logger.info("Train size: %d | Val size: %s", len(train_ds), (len(val_ds) if val_ds is not None else "—"))
+        logger.info("Train size: %d | Val size: %s", len(train_ds), (len(val_ds) if val_loader is not None else "—"))
     except Exception:
         pass
-
     return train_loader, val_loader
 
 

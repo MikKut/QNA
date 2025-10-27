@@ -142,7 +142,7 @@ optim:
   amsgrad: false
   maximize: false
   qna:
-    lambda_var: 0.0
+    lambda_var: 0.0 # 0.0 - classical one. > 0 - qna
     lr_min_mult: 0.1
     lr_max_mult: 1.0
     mode: param
