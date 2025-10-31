@@ -63,17 +63,19 @@ scaler:
     axis: vector
 training:
   optimizer: adam
-  lr: 0.001
+  lr: 0.003
   batch_size: 64
   epochs: 15
   grad_stats_interval: 100
   target_val_acc: 0.95
   weight_decay: 0.0
-  grad_clip: 1.0
+  grad_clip: 0.0 # 0, 1
   accumulate_steps: 1
   num_workers: 0
+  prefetch_factor: 2
+  drop_last: false
   early_stopping:
-    enable: true
+    enabled: false
     monitor: val_loss
     mode: min
     patience: 5
@@ -121,7 +123,7 @@ csv:
   utf8_bom: true
 quantum:
   device: default.qubit
-  shots: 100
+  shots: 36
   n_layers: 2
   topology: ring
   reupload: true
@@ -141,8 +143,8 @@ optim:
   amsgrad: false
   maximize: false
   qna:
-    lambda_var: 1.0e-3 # 0.0 - classical one. > 0 - qna
-    lr_min_mult: 0.1
+    lambda_var: 7 # 0.0 - classical one. > 0 - qna
+    lr_min_mult: 0.2
     lr_max_mult: 1.0
     mode: param
     vtilde_key: qna_vtilde

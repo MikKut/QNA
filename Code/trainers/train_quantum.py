@@ -251,6 +251,25 @@ def _fallback_seed_everything(seed: int, deterministic_torch: bool = False, logg
             pass
 
 
+def _enforce_torch_determinism(enabled: bool, logger) -> None:
+    """Додає практичні прапорці детермінізму для CUDA/Torch."""
+    if not enabled or not torch.cuda.is_available():
+        return
+    try:
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+    except Exception:
+        pass
+    try:
+        # Вимкнути TF32 для стабільності (не впливає на CPU)
+        torch.backends.cuda.matmul.allow_tf32 = False  # type: ignore[attr-defined]
+        torch.backends.cudnn.allow_tf32 = False        # type: ignore[attr-defined]
+    except Exception:
+        pass
+    # Для детермінізму на деяких CUDA-опах; не критично, але корисно зафіксувати
+    os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":16:8")
+    logger.info("Torch determinism flags applied on CUDA (cudnn.deterministic=True, benchmark=False, TF32=OFF).")
+
 def _set_all_seeds(cfg: Dict[str, Any], logger) -> int:
     """Єдиний вхід для сідування: намагаємось використати io_utils.seed_everything; інакше fallback."""
     seed = int(cfg.get("project", {}).get("seed", 42))
@@ -345,6 +364,61 @@ def _get_current_shots(model) -> Optional[int]:
         pass
     return None
 
+def _validate_quantum_backend(cfg: Dict[str, Any], model, logger) -> None:
+    """Легка валідація налаштувань квантового бекенду й узгодження з конфігом."""
+    qcfg = cfg.get("quantum", {}) or {}
+    pca_dim = int(cfg.get("pca", {}).get("dim", -1))
+    n_qubits = getattr(getattr(model, "quantum", None), "n_qubits", None)
+    if isinstance(n_qubits, int) and pca_dim > 0 and n_qubits != pca_dim:
+        logger.warning("n_qubits (%s) != pca.dim (%s) — перевірте узгодженість енкодингу.", n_qubits, pca_dim)
+    # diff_method sanity
+    allowed_diff = {"parameter-shift", "finite-diff", "backprop", "adjoint"}
+    dm = str(qcfg.get("diff_method", "parameter-shift")).lower()
+    if dm not in allowed_diff:
+        logger.warning("Непідтримуваний diff_method='%s' — перевірте конфіг (очікувано одне з %s).", dm, sorted(allowed_diff))
+    # shots тип
+    shots = qcfg.get("shots", None)
+    if shots is not None and not isinstance(shots, int):
+        logger.warning("shots має бути int, зараз %r — бекенд може впасти пізніше.", shots)
+    # device info
+    try:
+        dev = getattr(getattr(model, "quantum", None), "device", None)
+        logger.info("Quantum backend: %s | shots=%s", getattr(dev, "name", str(dev)), str(_get_current_shots(model)))
+    except Exception:
+        pass
+
+def _sanity_check_model(cfg: Dict[str, Any], model, train_loader: DataLoader, criterion, logger) -> None:
+    """Одноразовий dry-run: перевіряє форми, NaN/Inf і узгодженість n_classes."""
+    try:
+        n_classes = int(cfg.get("data", {}).get("n_classes", -1))
+        # ВАЖЛИВО: не використовувати iter(train_loader), щоб не зсувати RNG/порядок!
+        train_ds = train_loader.dataset  # type: ignore[attr-defined]
+        bs = int(cfg.get("training", {}).get("batch_size", 64))
+        take = min(len(train_ds), max(1, bs))  # перші 'take' елементів без shuffle
+        xs, ys = [], []
+        for i in range(take):
+            xi, yi = train_ds[i]
+            xs.append(xi)
+            ys.append(yi)
+        xb = torch.stack(xs, dim=0)
+        yb = torch.as_tensor(ys)
+        t0 = time.time()
+        with torch.no_grad():
+            E = model.quantum(xb)
+            logits = model.classifier(E)
+            _ = criterion(logits, yb)  # перевірка сумісності форми
+        if not torch.isfinite(E).all() or not torch.isfinite(logits).all():
+            logger.warning("Sanity: виявлено не-фінтні значення у expvals/логітах.")
+        if n_classes > 0 and logits.shape[-1] != n_classes:
+            logger.warning("Sanity: logits.shape[-1]=%d ≠ n_classes=%d — перевірте head/конфіг.",
+                           int(logits.shape[-1]), n_classes)
+        logger.info("Sanity: E=%s → logits=%s | n_classes=%s | dry-run %.1f ms",
+                    tuple(E.shape), tuple(logits.shape), (n_classes if n_classes>0 else "NA"),
+                    (time.time() - t0)*1000.0)
+    except StopIteration:
+        logger.warning("Sanity: train_loader порожній — пропускаю перевірку.")
+    except Exception as e:
+        logger.warning("Sanity: перевірка впала: %s", e)
 
 def _set_model_shots(model, shots: Optional[int], logger=None) -> None:
     try:
@@ -376,7 +450,12 @@ def _build_loaders(cfg: Dict[str, Any], seed: int, logger) -> Tuple[DataLoader, 
     batch_size  = int(cfg.get("training", {}).get("batch_size", 64))
     num_workers = int(cfg.get("training", {}).get("num_workers", 0))
     pin_mem     = bool(cfg.get("training", {}).get("pin_memory", torch.cuda.is_available()))
-
+    drop_last   = bool(cfg.get("training", {}).get("drop_last", True))
+    prefetch    = int(cfg.get("training", {}).get("prefetch_factor", 2))
+    if batch_size <= 0:
+        logger.error("training.batch_size має бути ≥ 1, зараз: %d", batch_size)
+        raise ValueError("Invalid batch_size")
+    
     train_ds = PhiDataset(cfg, mode="train", logger=logger)
     val_ds   = PhiDataset(cfg, mode="val",   logger=logger)
 
@@ -387,6 +466,9 @@ def _build_loaders(cfg: Dict[str, Any], seed: int, logger) -> Tuple[DataLoader, 
     # Детермінізм для shuffle та воркерів
     g = torch.Generator().manual_seed(seed)
     worker_init = make_worker_init_fn(seed) if num_workers > 0 else None
+    dl_kwargs = {"persistent_workers": (num_workers > 0)}
+    if num_workers > 0:
+        dl_kwargs["prefetch_factor"] = prefetch
 
     train_loader = DataLoader(
         train_ds,
@@ -396,7 +478,8 @@ def _build_loaders(cfg: Dict[str, Any], seed: int, logger) -> Tuple[DataLoader, 
         pin_memory=pin_mem,
         worker_init_fn=worker_init,
         generator=g,
-        persistent_workers=(num_workers > 0),
+        drop_last=drop_last,
+        **dl_kwargs,
     )
 
     # Створюємо val_loader ТІЛЬКИ якщо є зразки
@@ -409,7 +492,8 @@ def _build_loaders(cfg: Dict[str, Any], seed: int, logger) -> Tuple[DataLoader, 
             pin_memory=pin_mem,
             worker_init_fn=worker_init,
             generator=g,
-            persistent_workers=(num_workers > 0),
+            drop_last=False,
+            **dl_kwargs,
         )
     else:
         val_loader = None
@@ -589,6 +673,7 @@ def main(argv: Optional[list[str]] = None) -> int:
 
         # Сіди
         seed = _set_all_seeds(config, logger)
+        _enforce_torch_determinism(bool(config.get("project", {}).get("deterministic_torch", False)), logger)
 
         # Визначаємо фактичне ім'я оптимізатора для тега ран-а
         requested_opt = str(config.get("optim", {}).get("name", "adam")).lower()
@@ -609,7 +694,8 @@ def main(argv: Optional[list[str]] = None) -> int:
         # Модель
         model = _build_model(config, logger)  # CPU; default.qubit
         _set_model_seed(model, seed, logger=logger)  # синхронізуємо стохастику девайса
-
+        _validate_quantum_backend(config, model, logger)
+        _sanity_check_model(config, model, train_loader, criterion=torch.nn.CrossEntropyLoss(), logger=logger)
         # Оптимізатор
         optimizer = _build_optimizer(config, model, logger)
         criterion = torch.nn.CrossEntropyLoss()
@@ -693,6 +779,13 @@ def main(argv: Optional[list[str]] = None) -> int:
                 str(config.get("quantum", {}).get("shots", None)),
             )
 
+            qmetrics_enabled = bool(config.get("quantum", {}).get("metrics", {}).get("enabled", False)) and _HAS_Q_METRICS
+            qmetrics_path = os.path.join(run_paths.root, "qmetrics.jsonl")
+            if qmetrics_enabled:
+                # Touch-файл і повідомлення в лог — зручно для артефактів
+                open(qmetrics_path, "a", encoding="utf-8").close()
+                logger.info("Q-metrics enabled → %s", qmetrics_path)
+            
             for ep in range(1, epochs + 1):
                 epoch_t0 = time.time()
 
@@ -746,6 +839,9 @@ def main(argv: Optional[list[str]] = None) -> int:
                     )
                     Vtilde = doc.get("Vtilde", None)
                     var_param = doc.get("var_param", None)
+
+                    if qmetrics_enabled and step == 1:
+                        collect_qmetrics(logger, config, model, qmetrics_path, ep, step, xb, expvals)
 
                     # 4) Передати пер-параметрний шум у QNAAdam (через state[p])
                     if isinstance(optimizer, QNAAdam) and var_param is not None:
@@ -960,6 +1056,27 @@ def main(argv: Optional[list[str]] = None) -> int:
     except Exception as e:
         logger.exception("Помилка під час тренування: %s", str(e))
         return 1
+
+def collect_qmetrics(logger, config, model, qmetrics_path, ep, step, xb, expvals):
+    try:
+        with torch.no_grad():
+                                # 1) φ-метрики (якщо xb вже є кутами)
+            phi_m = compute_phi_metrics(xb, include_per_pc_std=False,
+                                                            angle_max=config.get("angles", {}).get("angle_max", None))
+                                # 2) виходи (expvals)
+            out_m = compute_expval_metrics(expvals, prefix="out")
+                            # 3) градієнти θ (після backward_inline_docps, до step)
+        theta_param = None
+        for p in model.quantum.parameters():  # type: ignore[attr-defined]
+            if isinstance(p, torch.nn.Parameter) and p.ndim == 2:
+                theta_param = p
+                break
+        theta_m = compute_theta_grad_metrics(theta_param) if theta_param is not None else {}
+        payload = merge_dicts({"epoch": ep, "step": step}, phi_m, out_m, theta_m)
+        with open(qmetrics_path, "a", encoding="utf-8") as fqm:
+            fqm.write(json.dumps(payload) + "\n")
+    except Exception as qe:
+        logger.warning("Q-metrics skip: %s", qe)
 
 
 if __name__ == "__main__":
