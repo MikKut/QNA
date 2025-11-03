@@ -86,7 +86,7 @@ class QuantumLayer(nn.Module):
         self.logger.debug(
             "Init QuantumLayer | n_qubits=%d, n_layers=%d, topology=%s, encoding=%s, reupload=%s, "
             "measurement=%s, shots=%s, seed=%d, param_seed=%s, param_init_std=%.3f",
-            self.n_qubits, self.n_layers, self.topology, self.encoding, self.reupload,
+            self.n_qubits, self.n_layers, self.topology, self.encoding, self.reupload, self.measurement,
             str(self.spec.shots), self.spec.seed, str(self._param_seed), self._param_init_std
         )
         self.logger.debug("QNode meta: %s", self._meta)

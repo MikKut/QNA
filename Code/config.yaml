@@ -104,7 +104,7 @@ z_cache:
   enable: true
   fingerprint: true
 logging:
-  level: INFO
+  level: DEBUG
   dir: ./runs
   preprocess_log: ./runs/preproc/preprocess.log
   train_log: ./runs/train/train.log

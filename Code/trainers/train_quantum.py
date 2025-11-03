@@ -603,65 +603,74 @@ def _fmt(x, fmt=".6f"):
     return s.replace(".", ",")
 
 
-def _push_qna_var_to_optimizer(optimizer: torch.optim.Optimizer,
-                               module: torch.nn.Module,
-                               var_param: torch.Tensor,
-                               logger) -> None:
+def _push_qna_var_to_optimizer(
+    optimizer: torch.optim.Optimizer,
+    module: torch.nn.Module,
+    var_param: torch.Tensor,
+    logger
+) -> None:
     """
-    Кладемо карту шуму саме в state[theta]["qna_var_param"].
-    Вимагаємо збіг шейпу або робимо керований fallback (з попередженням).
+    Кладемо пер-параметрний шум V саме в state[theta]["qna_var_param"].
+    Вимагаємо збіг шейпу або робимо керований fallback (із логами).
     Додатково гарантуємо finite та ≥0.
     """
     if var_param is None:
         return
 
-    # 1) Знайти параметр theta цілеспрямовано
+    # 1) Знайти іменований параметр 'theta' без рекурсії (у твоєму QuantumLayer він верхнього рівня)
     theta = None
-    for name, p in module.named_parameters(recurse=False):
-        if name == "theta":
-            theta = p
+    theta_name = None
+    for n, p in module.named_parameters(recurse=False):
+        if n == "theta":
+            theta, theta_name = p, n
             break
     if theta is None:
         logger.warning("QNA: не знайдено параметр 'theta' у quantum-модулі.")
         return
 
-    # 2) Переконатися, що theta реально оптимізується (є в param_groups)
-    in_groups = any(theta in g.get("params", []) for g in optimizer.param_groups)
-    if not in_groups:
-        logger.warning("QNA: 'theta' не входить до optimizer.param_groups — var_param буде проігноровано.")
+    # 2) Переконатися, що theta оптимізується
+    if not any(theta in g.get("params", []) for g in optimizer.param_groups):
+        logger.warning("QNA: 'theta' відсутній у optimizer.param_groups — var_param буде проігноровано.")
         return
 
     with torch.no_grad():
-        # 3) Перенести V на девайс/тип theta і зробити санітарну обробку
+        # 3) Санітаризація та приведення типів/девайсу
         V = var_param.to(dtype=theta.dtype, device=theta.device, copy=False)
         V = torch.nan_to_num(V, nan=0.0, posinf=0.0, neginf=0.0)
         V.clamp_min_(0.0)
 
-        # 4) Шейп: або (L, n_qubits), або скаляр; інакше — акуратний fallback
+        # 4) Узгодження форми: або точний збіг, або скаляр, або fallback=mean
+        did_mismatch = False
+        used_mean = None
+
         if V.shape != theta.shape:
+            did_mismatch = True
             if V.numel() == 1:
                 V = V.expand_as(theta)
                 logger.info("QNA: var_param скаляр — розширю до theta.shape=%s.", tuple(theta.shape))
             else:
-                vmean = float(torch.nan_to_num(var_param, nan=0.0, posinf=0.0, neginf=0.0).mean().item())
-                V = torch.full_like(theta, vmean)
-                logger.warning("QNA: var_param.shape=%s ≠ theta.shape=%s — fallback на mean=%.3e.",
-                               tuple(var_param.shape), tuple(theta.shape), vmean)
+                used_mean = float(V.mean().item())
+                V = torch.full_like(theta, used_mean)
+                logger.warning(
+                    "QNA: var_param.shape=%s ≠ theta.shape=%s — fallback на mean=%.3e.",
+                    tuple(var_param.shape), tuple(theta.shape), used_mean
+                )
 
         # 5) Запис у state рівно одного параметра (θ)
-        logger.warning(
+        optimizer.state[theta]["qna_var_param"] = V
+
+        # 6) Діагностика
+        Vw = optimizer.state[theta]["qna_var_param"]
+        if did_mismatch and used_mean is not None:
+            logger.warning(
                 "QNA PUSH: shape mismatch for %s: V%s != P%s → fallback mean=%.3e",
-                name, tuple(var_param.shape), tuple(p.shape), vmean
+                theta_name, tuple(var_param.shape), tuple(theta.shape), used_mean
             )
-        optimizer.state[p]["qna_var_param"] = torch.nan_to_num(V, nan=0.0, posinf=0.0, neginf=0.0)
         logger.debug(
             "QNA PUSH: wrote V into state[%s]: shape=%s | min/mean/max=[%.3e, %.3e, %.3e]",
-            name, tuple(optimizer.state[p]["qna_var_param"].shape),
-            float(optimizer.state[p]["qna_var_param"].min().item()),
-            float(optimizer.state[p]["qna_var_param"].mean().item()),
-            float(optimizer.state[p]["qna_var_param"].max().item()),
+            theta_name, tuple(Vw.shape),
+            float(Vw.min().item()), float(Vw.mean().item()), float(Vw.max().item())
         )
-
 
 def _extract_qna_stats_for_module(optimizer: torch.optim.Optimizer, module: torch.nn.Module) -> Dict[str, Any]:
     """
@@ -700,11 +709,13 @@ def main(argv: Optional[list[str]] = None) -> int:
         help="Path to YAML config (supports root config.yaml or Code/config.yaml)",
     )
     args = parser.parse_args(argv)
-    logger = setup_logger("train_quantum")
-
+    
     try:
         # Завантаження конфігу
         config = load_project_config(args.config)
+        a = config.get("logging", {})
+        b = a.get("level", "INFO")
+        logger = setup_logger("train_quantum", level = config.get("logging", {}).get("level", "INFO"))
         logger.info("Конфіг завантажено з: %s", args.config)
         _log_config_summary(config, logger)
 
@@ -901,7 +912,7 @@ def main(argv: Optional[list[str]] = None) -> int:
                                         (str(V.device) if V is not None else None),
                                     )
                                     break
-                                   
+
                         except Exception as e:
                             logger.warning("Не вдалось push var_param у QNAAdam: %s", e)
 
