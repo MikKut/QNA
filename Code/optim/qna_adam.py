@@ -218,12 +218,27 @@ class QNAAdam(Optimizer):
             else:
                 self._nan_to_num_(V_like, 0.0)
                 scale = self._build_scale_from_var(V_like, lam=lam, s_min=s_min, s_max=s_max)
+                    # Невелика вибірка для наочності
+                flat = scale.view(-1)
+                k = min(flat.numel(), 5)
+                sample = flat[:k].tolist()
+                logger.debug(
+                    "[QNAAdam] mode=param: scale stats for this param: "
+                    "min=%.3e mean=%.3e p90=%.3e max=%.3e | sample=%s",
+                    float(scale.min().item()),
+                    float(scale.mean().item()),
+                    float(torch.quantile(flat, torch.tensor(0.90)).item()) if flat.numel() >= 4 else float(scale.max().item()),
+                    float(scale.max().item()),
+                    [f"{x:.3e}" for x in sample]
+                )
+
                 return scale, "param"
 
         # 2) груповий шлях
         gv = group.get(key, None)
         if gv is not None:
             try:
+                logger.warning("[QNAAdam] goes to param")
                 gv_t = self._make_tensor_like_param(gv, p.data)  # скаляр ок → розшириться
                 self._nan_to_num_(gv_t, 0.0)
                 scale = self._build_scale_from_var(gv_t, lam=lam, s_min=s_min, s_max=s_max)

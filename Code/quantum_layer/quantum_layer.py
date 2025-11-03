@@ -359,7 +359,7 @@ class QuantumLayer(nn.Module):
             {
               "grad_theta": torch.Tensor(L, n_qubits),
               "var_param": torch.Tensor(L, n_qubits),   # карта V_i (документна формула)
-              "Vtilde": None,                           # лишається для сумісності ключів
+              "Vtilde": ,
               "shots": int,
               "expval_dim": int,
               (опц.) "Eplus_mean": float,
@@ -408,6 +408,7 @@ class QuantumLayer(nn.Module):
 
         # dL/dE → float32 на потрібному пристрої
         dL_dE_f32 = dL_dE.to(device=device, dtype=torch.float32, copy=False)
+        W = dL_dE_f32**2
 
         # 1/(4M) для документної формули
         M = self._spec_stats.shots
@@ -437,7 +438,8 @@ class QuantumLayer(nn.Module):
             grad_theta_work[l, w] = g_lw
 
             # Документна оцінка шуму для параметра i
-            v_lw = inv_4M * float(torch.mean(V_plus + V_minus).item()) if inv_4M > 0.0 else 0.0
+            V_el = V_plus + V_minus 
+            v_lw = inv_4M * float(torch.mean(V_el * W).item()) if inv_4M > 0.0 else 0.0
             var_param[l, w] = v_lw
 
             if return_epm:
@@ -452,11 +454,12 @@ class QuantumLayer(nn.Module):
         grad_theta_out = torch.zeros_like(self.theta)
         grad_theta_out.copy_(grad_theta_work.to(dtype=theta_dtype))
         self.theta.grad = grad_theta_out
+        Vtilde_scalar = float(torch.nan_to_num(var_param, nan=0.0, posinf=0.0, neginf=0.0).mean().item())
 
         out: Dict[str, Any] = {
             "grad_theta": grad_theta_out,
             "var_param": var_param,        # карта V_i
-            "Vtilde": None,               # для сумісності ключів (не використовується у param-режимі)
+            "Vtilde": Vtilde_scalar,               # для сумісності ключів (не використовується у param-режимі)
             "shots": int(self._spec_stats.shots) if self._spec_stats.shots is not None else -1,
             "expval_dim": int(expdim),
         }
