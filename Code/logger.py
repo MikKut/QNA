@@ -87,6 +87,10 @@ def setup_logger(
     if force and logger.handlers:
         for h in list(logger.handlers):
             logger.removeHandler(h)
+        try:
+            h.close()
+        except Exception:
+            pass
 
     # Консольний хендлер
     console_exists = any(_handler_is_console(h) for h in logger.handlers)

@@ -62,7 +62,7 @@ scaler:
   global:
     axis: vector
 training:
-  lr: 0.0003
+  lr: 0.001
   batch_size: 64
   epochs: 15
   grad_stats_interval: 100
@@ -104,7 +104,7 @@ z_cache:
   enable: true
   fingerprint: true
 logging:
-  level: DEBUG
+  level: INFO
   dir: ./runs
   preprocess_log: ./runs/preproc/preprocess.log
   train_log: ./runs/train/train.log
@@ -133,7 +133,7 @@ quantum:
   reseed_each_epoch: false
 optim:
   name: qna_adam
-  lr: 0.0003
+  lr: 0.001
   weight_decay: 0.0
   betas:
   - 0.9
@@ -142,7 +142,7 @@ optim:
   amsgrad: false
   maximize: false
   qna:
-    lambda_var: 1e6 # 0.0 - classical one. > 0 - qna
+    lambda_var: 21.09 #7 # 0.0 - classical one. > 0 - qna
     lr_min_mult: 0.2
     lr_max_mult: 1.0
     mode: param

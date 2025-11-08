@@ -423,7 +423,7 @@ class QNAAdam(Optimizer):
                 }
             except Exception as e:
                 # Нічого критичного — просто попередимо і підемо далі
-                logger.debug("[QNAAdam] failed to compute qna_stats: %s", e)
+                logger.warning("[QNAAdam] failed to compute qna_stats: %s", e)
 
             logger.debug(
                 "[QNAAdam] group step: lr=%.3g, amsgrad=%s, wd=%.2g, lam=%.2e | scale_mean=%.4f p90=%.4f",

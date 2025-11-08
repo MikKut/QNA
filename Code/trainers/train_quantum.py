@@ -1111,7 +1111,7 @@ def main(argv: Optional[list[str]] = None) -> int:
 
                 # Профайлінг епохи → JSONL
                 epoch_ms = int((time.time() - epoch_t0) * 1000)
-                profile_entry = {"epoch": ep, "time_ms": epoch_ms, "shots": _get_current_shots(model)}
+                profile_entry = {"epoch": ep, "time_ms": epoch_ms, "shots": _get_current_shots(model), "acc": val_acc, "val_loss": val_loss}
                 with open(run_paths.profiler_json, "a", encoding="utf-8") as f:
                     f.write(json.dumps(profile_entry) + "\n")
 

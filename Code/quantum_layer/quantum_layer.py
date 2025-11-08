@@ -439,7 +439,7 @@ class QuantumLayer(nn.Module):
 
             # Документна оцінка шуму для параметра i
             V_el = V_plus + V_minus 
-            v_lw = inv_4M * float(torch.mean(V_el * W).item()) if inv_4M > 0.0 else 0.0
+            v_lw = inv_4M * float(torch.mean(V_el).item()) if inv_4M > 0.0 else 0.0
             var_param[l, w] = v_lw
 
             if return_epm:
