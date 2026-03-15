@@ -1,0 +1,17 @@
+{
+  "python.envFile": "${workspaceFolder}/.env",
+  "git.useEditorAsCommitInput": false,
+
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "python.testing.nosetestsEnabled": false,
+
+  "python.testing.cwd": "${workspaceFolder}",
+  "python.testing.pytestArgs": [
+    "-vv",
+    "-s",                       // показує print()/логи у вікні Output/Debug Console
+    "--full-trace",             // повний стек при помилці
+    "Code/__tests__",
+    "Code/quantum_layer/__tests__"
+  ]
+}

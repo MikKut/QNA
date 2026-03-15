@@ -1,0 +1,67 @@
+method: zscore
+eps: 1.0e-08
+pca_dim: 8
+seed: 42
+dtype: float32
+stats:
+  mu:
+  - 3.355305307195522e-05
+  - 7.916675713204313e-06
+  - -3.705940252984874e-05
+  - -1.558343501528725e-05
+  - -4.835961590288207e-06
+  - -4.9782371206674725e-05
+  - 5.640869403578108e-06
+  - -3.142631976515986e-05
+  sigma:
+  - 3.025721549987793
+  - 2.051848888397217
+  - 1.9838004112243652
+  - 1.709593415260315
+  - 1.573885440826416
+  - 1.3918529748916626
+  - 1.296891212463379
+  - 1.2662501335144043
+fingerprint:
+  method: zscore
+  pca_dim: 8
+  eps: 1.0e-08
+  seed: 42
+  stats_hash: 9f0ef1b44ab8a8e8b13f496dcf1e16883dbaafc5e14ca4e76b18df6f99068ec7
+  created_at: '2025-10-25T02:05:40.793524+00:00'
+  numpy_version: 2.3.1
+  torch_version: 2.7.1+cpu
+  extras:
+    robust_kind: mad
+    c_mad: 1.4826
+    c_iqr: 1.349
+    target_classes:
+    - 0
+    - 1
+    - 2
+    - 3
+    class_map_orig:
+    - 0
+    - 1
+    - 2
+    - 3
+    class_map_new:
+    - 0
+    - 1
+    - 2
+    - 3
+target_classes:
+- 0
+- 1
+- 2
+- 3
+class_map_orig:
+- 0
+- 1
+- 2
+- 3
+class_map_new:
+- 0
+- 1
+- 2
+- 3

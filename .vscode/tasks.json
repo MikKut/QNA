@@ -1,0 +1,16 @@
+ {
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "SetActiveModuleEnv",
+      "type": "shell",
+      "command": "powershell",
+    "args": [
+        "-NoProfile",
+        "-Command",
+        "$rel='${fileRelativeToWorkspaceFolder}'; if([string]::IsNullOrEmpty($rel) -or -not $rel.ToLower().EndsWith('.py')){ throw 'Open a Python file inside the workspace'; } $mod=$rel -replace '\\\\','.' -replace '/','.'; $mod=$mod -replace '\\.py$',''; $mod=$mod -replace '\\.__init__$',''; $root='${workspaceFolder}'; $envPath=Join-Path $root '.vscode\\.env.debug'; $cfg=Join-Path $root 'Code\\config.yaml'; if(-not (Test-Path $cfg)){ throw 'config.yaml not found at ' + $cfg; } $lines=@('CURRENT_MODULE='+$mod,'CURRENT_CONFIG='+$cfg,'SPLIT=auto','USE_CACHE=auto','TARGET_CLIP=0.02','WRITE_FLAG=--write-config'); Set-Content -Encoding UTF8 -Path $envPath -Value $lines; Write-Host ('Active module: ' + $mod); Write-Host ('Config: ' + $cfg)"
+        ],
+      "problemMatcher": []
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+method: zscore
+pca_dim: 8
+eps: 1.0e-08
+seed: 42
+stats_hash: 6cc4e58ab77ffc85615af9c483cb62b1274b0dc2c49df32e38da23aed13185bb
+created_at: '2025-08-31T00:39:13.663602+00:00'
+numpy_version: 2.3.1
+torch_version: 2.7.1+cpu
+extras:
+  split: test
+  dtype: float32

@@ -1,0 +1,156 @@
+project:
+  name: QNA-QNN-MNIST
+  seed: 42
+  deterministic_torch: false
+paths:
+  data_root: ./data
+  X_train_pca: ./data/X_train_pca.npy
+  X_val_pca: ./data/X_val_pca.npy
+  X_test_pca: ./data/X_test_pca.npy
+  y_train: ./data/y_train.npy
+  y_val: ./data/y_val.npy
+  y_test: ./data/y_test.npy
+  pca_meta: ./data/pca_meta.npz
+  preprocess_stats: ./data/preprocess_stats.yaml
+  z_cache:
+    train: ./data/Z_train_std.npy
+    val: ./data/Z_val_std.npy
+    test: ./data/Z_test_std.npy
+data:
+  n_classes: 4
+  target_classes: {0, 1,2,3}
+  use_class_suffix: true
+  train_path: ./data
+  val_path: ./data
+  test_path: ./data
+  train_phi: ./data/train_phi_cls0123.npz
+  val_phi: ./data/val_phi_cls0123.npz
+  test_phi: ./data/test_phi_cls0123.npz
+pca:
+  dim: 8
+  whiten: false
+  svd_solver: auto
+  random_state: 42
+  save_extras: true
+angles:
+  k: 2.5
+  angle_max: 3.141592653589793
+  clip: true
+run:
+  stage: both
+pixels:
+  scale_to_unit: true
+  dtype: float32
+split:
+  make_val_split: true
+  val_size: 10000
+  stratify: true
+  shuffle: true
+  split_seed: 42
+  val_fraction: 0.2
+scaler:
+  method: zscore
+  eps: 1.0e-08
+  robust:
+    kind: mad
+    c_mad: 1.4826
+    c_iqr: 1.349
+  global:
+    axis: vector
+training:
+  lr: 0.001
+  batch_size: 64
+  epochs: 20
+  grad_stats_interval: 100
+  target_val_acc: 0.95
+  weight_decay: 0.0
+  grad_clip: 0.0 # 0, 1
+  accumulate_steps: 1
+  num_workers: 0
+  prefetch_factor: 2
+  drop_last: false
+  early_stopping:
+    enabled: false
+    monitor: val_loss
+    mode: min
+    patience: 5
+    min_delta: 0.0
+    warmup_epochs: 0
+    restore_best: true
+  inline_docps:
+    enabled: true
+    shift: 1.5707963267948966
+    reduce_var: param
+    stats_seed_offset: 0
+    subset:
+      mode: all
+      ratio: 1.0
+      min_params: 0
+diagnostics:
+  prescreen_k:
+  - 1.5
+  - 2.0
+  - 2.5
+  - 3.0
+  - 3.5
+  save_tables_to: ./runs/preproc/diag_k.csv
+  save_stats_to: ./runs/preproc/z_stats.json
+  make_plots: false
+z_cache:
+  enable: true
+  fingerprint: true
+logging:
+  level: INFO
+  dir: ./runs
+  preprocess_log: ./runs/preproc/preprocess.log
+  train_log: ./runs/train/train.log
+  qna:
+    log_each_step: false
+    log_each_epoch: true
+    csv_metrics: ./runs/train/qna_metrics.csv
+safety:
+  overwrite: true
+  assert_no_nan: true
+  require_finite_shots: true
+csv:
+  delimiter: ;
+  excel_sep_hint: true
+  utf8_bom: true
+quantum:
+  device: default.qubit
+  shots: 10
+  n_layers: 3
+  topology: ring
+  reupload: true
+  encoding: ry
+  measurements: Z
+  diff_method: parameter-shift
+  eval_shots: 2048
+  reseed_each_epoch: false
+optim:
+  name: qna_adam
+  lr: 0.003
+  weight_decay: 0.0
+  betas:
+  - 0.9
+  - 0.999
+  eps: 1.0e-08
+  amsgrad: false
+  maximize: false
+  qna:
+    lambda_var: 0 #7 # 0.0 - classical one. > 0 - qna
+    lr_min_mult: 0.2
+    lr_max_mult: 1.0
+    mode: param
+    vtilde_key: qna_vtilde
+    state_key: qna_var_param
+    clip_in_optimizer: false
+    max_norm: 1.0
+    error_if_nonfinite: false
+    grad_eps: 1.0e-06
+schedules:
+  shots:
+    mode: none
+    start: 100
+    end: 1000
+    epochs: 30
