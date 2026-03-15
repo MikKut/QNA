@@ -1,2 +1,9 @@
-Why?
-listing dependencies such as PyTorch and PennyLane
+numpy
+pandas
+matplotlib
+scikit-learn
+PyYAML
+torch
+torchvision
+pennylane
+pytest
