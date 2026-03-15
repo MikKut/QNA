@@ -4808,3 +4808,749 @@ TypeError: int() argument must be a string, a bytes-like object or a real number
 2025-11-07T18:17:25+0200 | INFO | qna | TEST: loss=1.0277, acc=0.582
 2025-11-07T18:17:28+0200 | INFO | qna | Графіки збережено до: ./runs\EXP_20251106_035000_optqnaadam_measz_encry_nq8_k25_L2_shots15\figs
 2025-11-07T18:17:28+0200 | INFO | qna | Report: ./runs\EXP_20251106_035000_optqnaadam_measz_encry_nq8_k25_L2_shots15\report.md
+2025-11-30T01:27:15+0200 | INFO | qna | Конфіг завантажено з: config.yaml
+2025-11-30T01:27:15+0200 | INFO | qna | Конфіг | n_qubits=8 | n_layers=2 | topology=ring | enc=ry | meas=Z | device=default.qubit | shots=15 | diff=parameter-shift
+2025-11-30T01:27:15+0200 | INFO | qna | Навчання | batch_size=64 | epochs=15 | lr=0.001 | grad_clip=0.00 | n_classes=4
+2025-11-30T01:27:15+0200 | INFO | qna | Дані    | train=./data/train_phi_cls0123.npz | val=./data/val_phi_cls0123.npz | angle_max=3.141592653589793 | k=2.5
+2025-11-30T01:27:16+0200 | INFO | qna | seed_everything: встановлено сид=42 (random/numpy/torch)
+2025-11-30T01:27:16+0200 | INFO | qna | Сіди через seed_everything(seed=42, deterministic_torch=False)
+2025-11-30T01:27:16+0200 | INFO | qna | Run name: EXP_20251130_012716_optqnaadam_measz_encry_nq8_k25_L2_shots15
+2025-11-30T01:27:16+0200 | INFO | qna | Run dir:  ./runs\EXP_20251130_012716_optqnaadam_measz_encry_nq8_k25_L2_shots15
+2025-11-30T01:27:16+0200 | INFO | qna | Збережено snapshot конфігу: ./runs\EXP_20251130_012716_optqnaadam_measz_encry_nq8_k25_L2_shots15\config.snapshot.yaml
+2025-11-30T01:27:16+0200 | INFO | qna | Артефакти будуть у: ./runs\EXP_20251130_012716_optqnaadam_measz_encry_nq8_k25_L2_shots15
+2025-11-30T01:27:16+0200 | INFO | qna | [PhiDataset] init: mode=train | path='./data' | suf='_cls0123' | use_suf=True | target_classes=[0, 1, 2, 3]
+2025-11-30T01:27:16+0200 | INFO | qna | [PhiDataset] init: cfg pca.dim=8
+2025-11-30T01:27:16+0200 | INFO | qna | [PhiDataset] y_path=./data\y_train_cls0123.npy
+2025-11-30T01:27:16+0200 | INFO | qna | [PhiDataset] y: shape=(19803,), dtype=int64, uniques={0: 4738, 1: 5394, 2: 4766, 3: 4905}
+2025-11-30T01:27:16+0200 | INFO | qna | [PhiDataset] Z candidates: ['./data\\Z_train_std_cls0123.npy', './data\\Z_train_std.npy_cls0123.fp'] | chosen: ./data\Z_train_std_cls0123.npy
+2025-11-30T01:27:16+0200 | WARNING | qna | [PhiDataset] AngleEncoder: ігнорую невідомі kwargs: ['clip']; дозволені=['angle_max', 'k', 'no_clip']
+2025-11-30T01:27:16+0200 | INFO | qna | [PhiDataset] Побудовано φ з Z: AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793}) | φ∈[-3.142, 3.142], clip-rate≈0.78% | mode=train | cache=True
+2025-11-30T01:27:16+0200 | INFO | qna | [PhiDataset] meta: {'mode': 'train', 'source': 'Z', 'encoder': "AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793})", 'n_qubits': 8, 'cached': True}
+2025-11-30T01:27:17+0200 | INFO | qna | [PhiDataset] mode=train | N=19803, n_qubits=8, n_classes=4 | |phi|_min=-3.14159, |phi|_max=3.14159, |phi|_mean≈1.01031
+2025-11-30T01:27:17+0200 | INFO | qna | [PhiDataset] Розподіл класів: [4738, 5394, 4766, 4905]
+2025-11-30T01:27:17+0200 | INFO | qna | [PhiDataset] φ clip-rate≈0.0078 (|φ| близько angle_max=3.14159), діапазон≈[-3.14159, 3.14159]
+2025-11-30T01:27:17+0200 | INFO | qna | [PhiDataset] init: mode=val | path='./data' | suf='_cls0123' | use_suf=True | target_classes=[0, 1, 2, 3]
+2025-11-30T01:27:17+0200 | INFO | qna | [PhiDataset] init: cfg pca.dim=8
+2025-11-30T01:27:17+0200 | INFO | qna | [PhiDataset] y_path=./data\y_val_cls0123.npy
+2025-11-30T01:27:17+0200 | INFO | qna | [PhiDataset] y: shape=(4951,), dtype=int64, uniques={0: 1185, 1: 1348, 2: 1192, 3: 1226}
+2025-11-30T01:27:17+0200 | INFO | qna | [PhiDataset] Z candidates: ['./data\\Z_val_std_cls0123.npy', './data\\Z_val_std.npy_cls0123.fp'] | chosen: ./data\Z_val_std_cls0123.npy
+2025-11-30T01:27:17+0200 | WARNING | qna | [PhiDataset] AngleEncoder: ігнорую невідомі kwargs: ['clip']; дозволені=['angle_max', 'k', 'no_clip']
+2025-11-30T01:27:17+0200 | INFO | qna | [PhiDataset] Побудовано φ з Z: AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793}) | φ∈[-3.142, 3.142], clip-rate≈0.73% | mode=val | cache=True
+2025-11-30T01:27:17+0200 | INFO | qna | [PhiDataset] meta: {'mode': 'val', 'source': 'Z', 'encoder': "AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793})", 'n_qubits': 8, 'cached': True}
+2025-11-30T01:27:17+0200 | INFO | qna | [PhiDataset] mode=val | N=4951, n_qubits=8, n_classes=4 | |phi|_min=-3.14159, |phi|_max=3.14159, |phi|_mean≈1.00730
+2025-11-30T01:27:17+0200 | INFO | qna | [PhiDataset] Розподіл класів: [1185, 1348, 1192, 1226]
+2025-11-30T01:27:17+0200 | INFO | qna | [PhiDataset] φ clip-rate≈0.0073 (|φ| близько angle_max=3.14159), діапазон≈[-3.14159, 3.14159]
+2025-11-30T01:27:17+0200 | INFO | qna | Train size: 19803 | Val size: 4951
+2025-11-30T01:27:17+0200 | INFO | qna | [QuantumClassifier] n_qubits=8, out_dim=8, n_classes=4 | device=default.qubit, shots=15, layers=2, topology=ring, encoding=ry, meas=Z, diff=parameter-shift, reupload=True
+2025-11-30T01:27:17+0200 | INFO | qna | Reseed device: 42 -> 42 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 15, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-11-30T01:27:17+0200 | INFO | qna | [QuantumClassifier] param/device seed set to 42
+2025-11-30T01:27:17+0200 | INFO | qna | Reseed quantum device RNG → 42
+2025-11-30T01:27:17+0200 | INFO | qna | Quantum backend: None | shots=15
+2025-11-30T01:27:18+0200 | INFO | qna | Sanity: E=(64, 8) → logits=(64, 4) | n_classes=4 | dry-run 1567.0 ms
+2025-11-30T01:27:18+0200 | WARNING | qna | [optim.registry] Ignoring unsupported kwargs for qnaadam/optimizer: ['alpha', 'mode', 'momentum', 'state_key']
+2025-11-30T01:27:33+0200 | INFO | qna | [optim.registry] created optimizer 'qnaadam' (groups=1) with keys=['amsgrad', 'betas', 'clip_in_optimizer', 'eps', 'error_if_nonfinite', 'grad_eps', 'lambda_var', 'lr', 'lr_max_mult', 'lr_min_mult', 'max_norm', 'maximize', 'vtilde_key', 'weight_decay']
+2025-11-30T01:27:33+0200 | INFO | qna | Оптимізатор з registry: qna_adam
+2025-11-30T01:27:33+0200 | INFO | qna | EarlyStopping: disabled (enabled=false).
+2025-11-30T01:27:34+0200 | INFO | qna | Старт тренування: epochs=15, batch_size=64, grad_clip=0.00, shots=15
+2025-11-30T01:27:35+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=15, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 15, 'analytic': False}
+2025-11-30T01:28:11+0200 | INFO | qna | [QNAAdam] options: clip_in_optimizer=False | max_norm=[1.0] | error_if_nonfinite=False | grad_eps=[1e-06] | lambda_var=[21.09] | lr_min_mult=[0.2] | lr_max_mult=[1.0] | vtilde_key(s)=['qna_vtilde']
+2025-11-30T04:43:03+0200 | INFO | qna | [Epoch 1] train: loss=1.3713, acc=0.329, ‖∇‖raw=0.176, ‖∇‖=0.176, clip_rate=0.00, V~=3.004e-02, shots=15 | scale_mean=0.881 p90=1.000
+2025-11-30T04:43:03+0200 | INFO | qna | Switch shots: 15 -> 2048 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 2048, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-11-30T04:43:03+0200 | INFO | qna | [QuantumClassifier] shots set to 2048
+2025-11-30T04:43:03+0200 | INFO | qna | Встановлено shots → 2048
+2025-11-30T04:44:26+0200 | INFO | qna | [Epoch 1]   val: loss=1.3370, acc=0.386 (eval_shots=2048)
+2025-11-30T04:44:27+0200 | INFO | qna | Збережено найкращу модель (val_loss=1.337049) → ./runs\EXP_20251130_012716_optqnaadam_measz_encry_nq8_k25_L2_shots15\model.pt
+2025-11-30T04:44:27+0200 | INFO | qna | Switch shots: 2048 -> 15 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 15, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-11-30T04:44:27+0200 | INFO | qna | [QuantumClassifier] shots set to 15
+2025-11-30T04:44:27+0200 | INFO | qna | Встановлено shots → 15
+2025-11-30T04:44:28+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=15, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 15, 'analytic': False}
+2025-11-30T07:49:26+0200 | INFO | qna | [Epoch 2] train: loss=1.3173, acc=0.376, ‖∇‖raw=0.176, ‖∇‖=0.176, clip_rate=0.00, V~=2.993e-02, shots=15 | scale_mean=0.881 p90=1.000
+2025-11-30T07:49:26+0200 | INFO | qna | Switch shots: 15 -> 2048 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 2048, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-11-30T07:49:26+0200 | INFO | qna | [QuantumClassifier] shots set to 2048
+2025-11-30T07:49:26+0200 | INFO | qna | Встановлено shots → 2048
+2025-11-30T07:50:48+0200 | INFO | qna | [Epoch 2]   val: loss=1.2717, acc=0.479 (eval_shots=2048)
+2025-11-30T07:50:48+0200 | INFO | qna | Збережено найкращу модель (val_loss=1.271719) → ./runs\EXP_20251130_012716_optqnaadam_measz_encry_nq8_k25_L2_shots15\model.pt
+2025-11-30T07:50:48+0200 | INFO | qna | Switch shots: 2048 -> 15 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 15, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-11-30T07:50:48+0200 | INFO | qna | [QuantumClassifier] shots set to 15
+2025-11-30T07:50:48+0200 | INFO | qna | Встановлено shots → 15
+2025-11-30T07:50:49+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=15, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 15, 'analytic': False}
+2025-11-30T11:15:08+0200 | INFO | qna | [Epoch 3] train: loss=1.2442, acc=0.421, ‖∇‖raw=0.191, ‖∇‖=0.191, clip_rate=0.00, V~=2.976e-02, shots=15 | scale_mean=0.881 p90=1.000
+2025-11-30T11:15:08+0200 | INFO | qna | Switch shots: 15 -> 2048 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 2048, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-11-30T11:15:08+0200 | INFO | qna | [QuantumClassifier] shots set to 2048
+2025-11-30T11:15:08+0200 | INFO | qna | Встановлено shots → 2048
+2025-11-30T11:16:31+0200 | INFO | qna | [Epoch 3]   val: loss=1.1773, acc=0.521 (eval_shots=2048)
+2025-11-30T11:16:31+0200 | INFO | qna | Збережено найкращу модель (val_loss=1.177271) → ./runs\EXP_20251130_012716_optqnaadam_measz_encry_nq8_k25_L2_shots15\model.pt
+2025-11-30T11:16:31+0200 | INFO | qna | Switch shots: 2048 -> 15 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 15, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-11-30T11:16:31+0200 | INFO | qna | [QuantumClassifier] shots set to 15
+2025-11-30T11:16:31+0200 | INFO | qna | Встановлено shots → 15
+2025-11-30T11:16:32+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=15, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 15, 'analytic': False}
+2025-11-30T14:22:53+0200 | INFO | qna | [Epoch 4] train: loss=1.1661, acc=0.465, ‖∇‖raw=0.195, ‖∇‖=0.195, clip_rate=0.00, V~=2.957e-02, shots=15 | scale_mean=0.882 p90=1.000
+2025-11-30T14:22:53+0200 | INFO | qna | Switch shots: 15 -> 2048 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 2048, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-11-30T14:22:53+0200 | INFO | qna | [QuantumClassifier] shots set to 2048
+2025-11-30T14:22:53+0200 | INFO | qna | Встановлено shots → 2048
+2025-11-30T14:24:16+0200 | INFO | qna | [Epoch 4]   val: loss=1.0939, acc=0.564 (eval_shots=2048)
+2025-11-30T14:24:16+0200 | INFO | qna | Збережено найкращу модель (val_loss=1.093898) → ./runs\EXP_20251130_012716_optqnaadam_measz_encry_nq8_k25_L2_shots15\model.pt
+2025-11-30T14:24:16+0200 | INFO | qna | Switch shots: 2048 -> 15 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 15, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-11-30T14:24:16+0200 | INFO | qna | [QuantumClassifier] shots set to 15
+2025-11-30T14:24:16+0200 | INFO | qna | Встановлено shots → 15
+2025-11-30T14:24:18+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=15, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 15, 'analytic': False}
+2025-11-30T17:30:42+0200 | INFO | qna | [Epoch 5] train: loss=1.1035, acc=0.495, ‖∇‖raw=0.191, ‖∇‖=0.191, clip_rate=0.00, V~=2.945e-02, shots=15 | scale_mean=0.882 p90=1.000
+2025-11-30T17:30:42+0200 | INFO | qna | Switch shots: 15 -> 2048 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 2048, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-11-30T17:30:42+0200 | INFO | qna | [QuantumClassifier] shots set to 2048
+2025-11-30T17:30:42+0200 | INFO | qna | Встановлено shots → 2048
+2025-11-30T17:32:06+0200 | INFO | qna | [Epoch 5]   val: loss=1.0376, acc=0.591 (eval_shots=2048)
+2025-11-30T17:32:06+0200 | INFO | qna | Збережено найкращу модель (val_loss=1.037576) → ./runs\EXP_20251130_012716_optqnaadam_measz_encry_nq8_k25_L2_shots15\model.pt
+2025-11-30T17:32:07+0200 | INFO | qna | Switch shots: 2048 -> 15 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 15, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-11-30T17:32:07+0200 | INFO | qna | [QuantumClassifier] shots set to 15
+2025-11-30T17:32:07+0200 | INFO | qna | Встановлено shots → 15
+2025-11-30T17:32:09+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=15, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 15, 'analytic': False}
+2025-11-30T20:40:50+0200 | INFO | qna | [Epoch 6] train: loss=1.0686, acc=0.509, ‖∇‖raw=0.189, ‖∇‖=0.189, clip_rate=0.00, V~=2.938e-02, shots=15 | scale_mean=0.882 p90=1.000
+2025-11-30T20:40:50+0200 | INFO | qna | Switch shots: 15 -> 2048 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 2048, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-11-30T20:40:50+0200 | INFO | qna | [QuantumClassifier] shots set to 2048
+2025-11-30T20:40:50+0200 | INFO | qna | Встановлено shots → 2048
+2025-11-30T20:42:13+0200 | INFO | qna | [Epoch 6]   val: loss=1.0019, acc=0.604 (eval_shots=2048)
+2025-11-30T20:42:13+0200 | INFO | qna | Збережено найкращу модель (val_loss=1.001872) → ./runs\EXP_20251130_012716_optqnaadam_measz_encry_nq8_k25_L2_shots15\model.pt
+2025-11-30T20:42:13+0200 | INFO | qna | Switch shots: 2048 -> 15 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 15, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-11-30T20:42:13+0200 | INFO | qna | [QuantumClassifier] shots set to 15
+2025-11-30T20:42:13+0200 | INFO | qna | Встановлено shots → 15
+2025-11-30T20:42:14+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=15, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 15, 'analytic': False}
+2025-11-30T23:49:18+0200 | INFO | qna | [Epoch 7] train: loss=1.0396, acc=0.525, ‖∇‖raw=0.190, ‖∇‖=0.190, clip_rate=0.00, V~=2.933e-02, shots=15 | scale_mean=0.882 p90=1.000
+2025-11-30T23:49:18+0200 | INFO | qna | Switch shots: 15 -> 2048 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 2048, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-11-30T23:49:18+0200 | INFO | qna | [QuantumClassifier] shots set to 2048
+2025-11-30T23:49:18+0200 | INFO | qna | Встановлено shots → 2048
+2025-11-30T23:50:42+0200 | INFO | qna | [Epoch 7]   val: loss=0.9771, acc=0.606 (eval_shots=2048)
+2025-11-30T23:50:42+0200 | INFO | qna | Збережено найкращу модель (val_loss=0.977124) → ./runs\EXP_20251130_012716_optqnaadam_measz_encry_nq8_k25_L2_shots15\model.pt
+2025-11-30T23:50:42+0200 | INFO | qna | Switch shots: 2048 -> 15 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 15, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-11-30T23:50:42+0200 | INFO | qna | [QuantumClassifier] shots set to 15
+2025-11-30T23:50:42+0200 | INFO | qna | Встановлено shots → 15
+2025-11-30T23:50:44+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=15, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 15, 'analytic': False}
+2025-12-01T02:45:32+0200 | INFO | qna | [Epoch 8] train: loss=1.0240, acc=0.524, ‖∇‖raw=0.192, ‖∇‖=0.192, clip_rate=0.00, V~=2.930e-02, shots=15 | scale_mean=0.883 p90=1.000
+2025-12-01T02:45:32+0200 | INFO | qna | Switch shots: 15 -> 2048 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 2048, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-01T02:45:32+0200 | INFO | qna | [QuantumClassifier] shots set to 2048
+2025-12-01T02:45:32+0200 | INFO | qna | Встановлено shots → 2048
+2025-12-01T02:46:50+0200 | INFO | qna | [Epoch 8]   val: loss=0.9601, acc=0.607 (eval_shots=2048)
+2025-12-01T02:46:50+0200 | INFO | qna | Збережено найкращу модель (val_loss=0.960119) → ./runs\EXP_20251130_012716_optqnaadam_measz_encry_nq8_k25_L2_shots15\model.pt
+2025-12-01T02:46:50+0200 | INFO | qna | Switch shots: 2048 -> 15 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 2, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 15, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-01T02:46:50+0200 | INFO | qna | [QuantumClassifier] shots set to 15
+2025-12-01T02:46:50+0200 | INFO | qna | Встановлено shots → 15
+2025-12-01T02:46:51+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=15, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 15, 'analytic': False}
+2025-12-02T08:14:46+0200 | INFO | qna | Конфіг завантажено з: config.yaml
+2025-12-02T08:14:46+0200 | INFO | qna | Конфіг | n_qubits=8 | n_layers=3 | topology=ring | enc=ry | meas=Z | device=default.qubit | shots=30 | diff=parameter-shift
+2025-12-02T08:14:46+0200 | INFO | qna | Навчання | batch_size=64 | epochs=20 | lr=0.001 | grad_clip=0.00 | n_classes=10
+2025-12-02T08:14:46+0200 | INFO | qna | Дані    | train=./data/train_phi_cls0123.npz | val=./data/val_phi_cls0123.npz | angle_max=3.141592653589793 | k=2.5
+2025-12-02T08:14:46+0200 | INFO | qna | seed_everything: встановлено сид=42 (random/numpy/torch)
+2025-12-02T08:14:46+0200 | INFO | qna | Сіди через seed_everything(seed=42, deterministic_torch=False)
+2025-12-02T08:14:46+0200 | INFO | qna | Run name: EXP_20251202_081446_optqnaadam_measz_encry_nq8_k25_L3_shots30
+2025-12-02T08:14:46+0200 | INFO | qna | Run dir:  ./runs\EXP_20251202_081446_optqnaadam_measz_encry_nq8_k25_L3_shots30
+2025-12-02T08:14:46+0200 | INFO | qna | Збережено snapshot конфігу: ./runs\EXP_20251202_081446_optqnaadam_measz_encry_nq8_k25_L3_shots30\config.snapshot.yaml
+2025-12-02T08:14:46+0200 | INFO | qna | Артефакти будуть у: ./runs\EXP_20251202_081446_optqnaadam_measz_encry_nq8_k25_L3_shots30
+2025-12-02T08:14:46+0200 | INFO | qna | [PhiDataset] init: mode=train | path='./data' | suf='' | use_suf=True | target_classes=None
+2025-12-02T08:14:46+0200 | INFO | qna | [PhiDataset] init: cfg pca.dim=8
+2025-12-02T08:14:46+0200 | INFO | qna | [PhiDataset] y_path=./data\y_train.npy
+2025-12-02T08:14:47+0200 | INFO | qna | [PhiDataset] y: shape=(50000,), dtype=int64, uniques={0: 4936, 1: 5618, 2: 4965, 3: 5109, 4: 4868, 5: 4518, 6: 4932, 7: 5221, 8: 4876, 9: 4957}
+2025-12-02T08:14:47+0200 | INFO | qna | [PhiDataset] Z candidates: ['./data\\Z_train_std.npy', './data\\Z_train_std.npy.fp'] | chosen: ./data\Z_train_std.npy
+2025-12-02T08:14:47+0200 | WARNING | qna | [PhiDataset] AngleEncoder: ігнорую невідомі kwargs: ['clip']; дозволені=['angle_max', 'k', 'no_clip']
+2025-12-02T08:14:47+0200 | INFO | qna | [PhiDataset] Побудовано φ з Z: AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793}) | φ∈[-3.142, 3.142], clip-rate≈0.98% | mode=train | cache=True
+2025-12-02T08:14:47+0200 | INFO | qna | [PhiDataset] meta: {'mode': 'train', 'source': 'Z', 'encoder': "AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793})", 'n_qubits': 8, 'cached': True}
+2025-12-02T08:14:47+0200 | INFO | qna | [PhiDataset] mode=train | N=50000, n_qubits=8, n_classes=10 | |phi|_min=-3.14159, |phi|_max=3.14159, |phi|_mean≈1.00704
+2025-12-02T08:14:47+0200 | INFO | qna | [PhiDataset] Розподіл класів: [4936, 5618, 4965, 5109, 4868, 4518, 4932, 5221, 4876, 4957]
+2025-12-02T08:14:47+0200 | INFO | qna | [PhiDataset] φ clip-rate≈0.0098 (|φ| близько angle_max=3.14159), діапазон≈[-3.14159, 3.14159]
+2025-12-02T08:14:47+0200 | INFO | qna | [PhiDataset] init: mode=val | path='./data' | suf='' | use_suf=True | target_classes=None
+2025-12-02T08:14:47+0200 | INFO | qna | [PhiDataset] init: cfg pca.dim=8
+2025-12-02T08:14:47+0200 | INFO | qna | [PhiDataset] y_path=./data\y_val.npy
+2025-12-02T08:14:47+0200 | INFO | qna | [PhiDataset] y: shape=(10000,), dtype=int64, uniques={0: 987, 1: 1124, 2: 993, 3: 1022, 4: 974, 5: 903, 6: 986, 7: 1044, 8: 975, 9: 992}
+2025-12-02T08:14:47+0200 | INFO | qna | [PhiDataset] Z candidates: ['./data\\Z_val_std.npy', './data\\Z_val_std.npy.fp'] | chosen: ./data\Z_val_std.npy
+2025-12-02T08:14:47+0200 | WARNING | qna | [PhiDataset] AngleEncoder: ігнорую невідомі kwargs: ['clip']; дозволені=['angle_max', 'k', 'no_clip']
+2025-12-02T08:14:47+0200 | INFO | qna | [PhiDataset] Побудовано φ з Z: AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793}) | φ∈[-3.142, 3.142], clip-rate≈0.93% | mode=val | cache=True
+2025-12-02T08:14:47+0200 | INFO | qna | [PhiDataset] meta: {'mode': 'val', 'source': 'Z', 'encoder': "AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793})", 'n_qubits': 8, 'cached': True}
+2025-12-02T08:14:47+0200 | INFO | qna | [PhiDataset] mode=val | N=10000, n_qubits=8, n_classes=10 | |phi|_min=-3.14159, |phi|_max=3.14159, |phi|_mean≈1.00464
+2025-12-02T08:14:47+0200 | INFO | qna | [PhiDataset] Розподіл класів: [987, 1124, 993, 1022, 974, 903, 986, 1044, 975, 992]
+2025-12-02T08:14:47+0200 | INFO | qna | [PhiDataset] φ clip-rate≈0.0093 (|φ| близько angle_max=3.14159), діапазон≈[-3.14159, 3.14159]
+2025-12-02T08:14:47+0200 | INFO | qna | Train size: 50000 | Val size: 10000
+2025-12-02T08:14:48+0200 | INFO | qna | [QuantumClassifier] n_qubits=8, out_dim=8, n_classes=10 | device=default.qubit, shots=30, layers=3, topology=ring, encoding=ry, meas=Z, diff=parameter-shift, reupload=True
+2025-12-02T08:14:48+0200 | INFO | qna | Reseed device: 42 -> 42 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 30, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-02T08:14:48+0200 | INFO | qna | [QuantumClassifier] param/device seed set to 42
+2025-12-02T08:14:48+0200 | INFO | qna | Reseed quantum device RNG → 42
+2025-12-02T08:14:48+0200 | INFO | qna | Quantum backend: None | shots=30
+2025-12-02T08:14:51+0200 | INFO | qna | Sanity: E=(64, 8) → logits=(64, 10) | n_classes=10 | dry-run 2932.3 ms
+2025-12-02T08:14:51+0200 | WARNING | qna | [optim.registry] Ignoring unsupported kwargs for qnaadam/optimizer: ['alpha', 'mode', 'momentum', 'state_key']
+2025-12-02T08:15:10+0200 | INFO | qna | [optim.registry] created optimizer 'qnaadam' (groups=1) with keys=['amsgrad', 'betas', 'clip_in_optimizer', 'eps', 'error_if_nonfinite', 'grad_eps', 'lambda_var', 'lr', 'lr_max_mult', 'lr_min_mult', 'max_norm', 'maximize', 'vtilde_key', 'weight_decay']
+2025-12-02T08:15:10+0200 | INFO | qna | Оптимізатор з registry: qna_adam
+2025-12-02T08:15:10+0200 | INFO | qna | EarlyStopping: disabled (enabled=false).
+2025-12-02T08:15:10+0200 | INFO | qna | Старт тренування: epochs=20, batch_size=64, grad_clip=0.00, shots=30
+2025-12-02T08:15:12+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=30, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 30, 'analytic': False}
+2025-12-02T08:16:12+0200 | INFO | qna | [QNAAdam] options: clip_in_optimizer=False | max_norm=[1.0] | error_if_nonfinite=False | grad_eps=[1e-06] | lambda_var=[0.0] | lr_min_mult=[0.2] | lr_max_mult=[1.0] | vtilde_key(s)=['qna_vtilde']
+2025-12-02T21:30:20+0200 | INFO | qna | [Epoch 1] train: loss=2.3061, acc=0.122, ‖∇‖raw=0.149, ‖∇‖=0.149, clip_rate=0.00, V~=1.597e-02, shots=30 | scale_mean=1.000 p90=1.000
+2025-12-02T21:30:20+0200 | INFO | qna | Switch shots: 30 -> 2048 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 2048, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-02T21:30:20+0200 | INFO | qna | [QuantumClassifier] shots set to 2048
+2025-12-02T21:30:20+0200 | INFO | qna | Встановлено shots → 2048
+2025-12-02T21:33:31+0200 | INFO | qna | [Epoch 1]   val: loss=2.2860, acc=0.140 (eval_shots=2048)
+2025-12-02T21:33:31+0200 | INFO | qna | Збережено найкращу модель (val_loss=2.286033) → ./runs\EXP_20251202_081446_optqnaadam_measz_encry_nq8_k25_L3_shots30\model.pt
+2025-12-02T21:33:31+0200 | INFO | qna | Switch shots: 2048 -> 30 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 30, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-02T21:33:31+0200 | INFO | qna | [QuantumClassifier] shots set to 30
+2025-12-02T21:33:31+0200 | INFO | qna | Встановлено shots → 30
+2025-12-02T21:33:33+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=30, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 30, 'analytic': False}
+2025-12-03T10:51:41+0200 | INFO | qna | [Epoch 2] train: loss=2.2696, acc=0.145, ‖∇‖raw=0.152, ‖∇‖=0.152, clip_rate=0.00, V~=1.595e-02, shots=30 | scale_mean=1.000 p90=1.000
+2025-12-03T10:51:41+0200 | INFO | qna | Switch shots: 30 -> 2048 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 2048, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-03T10:51:41+0200 | INFO | qna | [QuantumClassifier] shots set to 2048
+2025-12-03T10:51:41+0200 | INFO | qna | Встановлено shots → 2048
+2025-12-03T10:54:53+0200 | INFO | qna | [Epoch 2]   val: loss=2.2386, acc=0.157 (eval_shots=2048)
+2025-12-03T10:54:53+0200 | INFO | qna | Збережено найкращу модель (val_loss=2.238566) → ./runs\EXP_20251202_081446_optqnaadam_measz_encry_nq8_k25_L3_shots30\model.pt
+2025-12-03T10:54:53+0200 | INFO | qna | Switch shots: 2048 -> 30 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 30, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-03T10:54:53+0200 | INFO | qna | [QuantumClassifier] shots set to 30
+2025-12-03T10:54:53+0200 | INFO | qna | Встановлено shots → 30
+2025-12-03T10:54:55+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=30, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 30, 'analytic': False}
+2025-12-04T01:00:56+0200 | INFO | qna | [Epoch 3] train: loss=2.2300, acc=0.157, ‖∇‖raw=0.168, ‖∇‖=0.168, clip_rate=0.00, V~=1.593e-02, shots=30 | scale_mean=1.000 p90=1.000
+2025-12-04T01:00:56+0200 | INFO | qna | Switch shots: 30 -> 2048 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 2048, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-04T01:00:56+0200 | INFO | qna | [QuantumClassifier] shots set to 2048
+2025-12-04T01:00:56+0200 | INFO | qna | Встановлено shots → 2048
+2025-12-04T01:04:14+0200 | INFO | qna | [Epoch 3]   val: loss=2.1957, acc=0.188 (eval_shots=2048)
+2025-12-04T01:04:14+0200 | INFO | qna | Збережено найкращу модель (val_loss=2.195700) → ./runs\EXP_20251202_081446_optqnaadam_measz_encry_nq8_k25_L3_shots30\model.pt
+2025-12-04T01:04:14+0200 | INFO | qna | Switch shots: 2048 -> 30 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 30, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-04T01:04:14+0200 | INFO | qna | [QuantumClassifier] shots set to 30
+2025-12-04T01:04:14+0200 | INFO | qna | Встановлено shots → 30
+2025-12-04T01:04:15+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=30, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 30, 'analytic': False}
+2025-12-04T14:47:58+0200 | INFO | qna | [Epoch 4] train: loss=2.2037, acc=0.167, ‖∇‖raw=0.184, ‖∇‖=0.184, clip_rate=0.00, V~=1.592e-02, shots=30 | scale_mean=1.000 p90=1.000
+2025-12-04T14:47:58+0200 | INFO | qna | Switch shots: 30 -> 2048 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 2048, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-04T14:47:58+0200 | INFO | qna | [QuantumClassifier] shots set to 2048
+2025-12-04T14:47:58+0200 | INFO | qna | Встановлено shots → 2048
+2025-12-04T14:51:12+0200 | INFO | qna | [Epoch 4]   val: loss=2.1683, acc=0.198 (eval_shots=2048)
+2025-12-04T14:51:12+0200 | INFO | qna | Збережено найкращу модель (val_loss=2.168300) → ./runs\EXP_20251202_081446_optqnaadam_measz_encry_nq8_k25_L3_shots30\model.pt
+2025-12-04T14:51:12+0200 | INFO | qna | Switch shots: 2048 -> 30 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 30, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-04T14:51:12+0200 | INFO | qna | [QuantumClassifier] shots set to 30
+2025-12-04T14:51:12+0200 | INFO | qna | Встановлено shots → 30
+2025-12-04T14:51:14+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=30, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 30, 'analytic': False}
+2025-12-04T21:21:51+0200 | INFO | qna | Конфіг завантажено з: config.yaml
+2025-12-04T21:21:51+0200 | INFO | qna | Конфіг | n_qubits=8 | n_layers=3 | topology=ring | enc=ry | meas=Z | device=default.qubit | shots=10 | diff=parameter-shift
+2025-12-04T21:21:51+0200 | INFO | qna | Навчання | batch_size=64 | epochs=20 | lr=0.001 | grad_clip=0.00 | n_classes=10
+2025-12-04T21:21:51+0200 | INFO | qna | Дані    | train=./data/train_phi_cls0123.npz | val=./data/val_phi_cls0123.npz | angle_max=3.141592653589793 | k=2.5
+2025-12-04T21:21:51+0200 | INFO | qna | seed_everything: встановлено сид=42 (random/numpy/torch)
+2025-12-04T21:21:51+0200 | INFO | qna | Сіди через seed_everything(seed=42, deterministic_torch=False)
+2025-12-04T21:21:51+0200 | INFO | qna | Run name: EXP_20251204_212151_optqnaadam_measz_encry_nq8_k25_L3_shots10
+2025-12-04T21:21:51+0200 | INFO | qna | Run dir:  ./runs\EXP_20251204_212151_optqnaadam_measz_encry_nq8_k25_L3_shots10
+2025-12-04T21:21:51+0200 | INFO | qna | Збережено snapshot конфігу: ./runs\EXP_20251204_212151_optqnaadam_measz_encry_nq8_k25_L3_shots10\config.snapshot.yaml
+2025-12-04T21:21:51+0200 | INFO | qna | Артефакти будуть у: ./runs\EXP_20251204_212151_optqnaadam_measz_encry_nq8_k25_L3_shots10
+2025-12-04T21:21:51+0200 | INFO | qna | [PhiDataset] init: mode=train | path='./data' | suf='' | use_suf=True | target_classes=None
+2025-12-04T21:21:51+0200 | INFO | qna | [PhiDataset] init: cfg pca.dim=8
+2025-12-04T21:21:51+0200 | INFO | qna | [PhiDataset] y_path=./data\y_train.npy
+2025-12-04T21:21:51+0200 | INFO | qna | [PhiDataset] y: shape=(50000,), dtype=int64, uniques={0: 4936, 1: 5618, 2: 4965, 3: 5109, 4: 4868, 5: 4518, 6: 4932, 7: 5221, 8: 4876, 9: 4957}
+2025-12-04T21:21:51+0200 | INFO | qna | [PhiDataset] Z candidates: ['./data\\Z_train_std.npy', './data\\Z_train_std.npy.fp'] | chosen: ./data\Z_train_std.npy
+2025-12-04T21:21:51+0200 | WARNING | qna | [PhiDataset] AngleEncoder: ігнорую невідомі kwargs: ['clip']; дозволені=['angle_max', 'k', 'no_clip']
+2025-12-04T21:21:51+0200 | INFO | qna | [PhiDataset] Побудовано φ з Z: AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793}) | φ∈[-3.142, 3.142], clip-rate≈0.98% | mode=train | cache=True
+2025-12-04T21:21:51+0200 | INFO | qna | [PhiDataset] meta: {'mode': 'train', 'source': 'Z', 'encoder': "AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793})", 'n_qubits': 8, 'cached': True}
+2025-12-04T21:21:52+0200 | INFO | qna | [PhiDataset] mode=train | N=50000, n_qubits=8, n_classes=10 | |phi|_min=-3.14159, |phi|_max=3.14159, |phi|_mean≈1.00704
+2025-12-04T21:21:52+0200 | INFO | qna | [PhiDataset] Розподіл класів: [4936, 5618, 4965, 5109, 4868, 4518, 4932, 5221, 4876, 4957]
+2025-12-04T21:21:52+0200 | INFO | qna | [PhiDataset] φ clip-rate≈0.0098 (|φ| близько angle_max=3.14159), діапазон≈[-3.14159, 3.14159]
+2025-12-04T21:21:52+0200 | INFO | qna | [PhiDataset] init: mode=val | path='./data' | suf='' | use_suf=True | target_classes=None
+2025-12-04T21:21:52+0200 | INFO | qna | [PhiDataset] init: cfg pca.dim=8
+2025-12-04T21:21:52+0200 | INFO | qna | [PhiDataset] y_path=./data\y_val.npy
+2025-12-04T21:21:52+0200 | INFO | qna | [PhiDataset] y: shape=(10000,), dtype=int64, uniques={0: 987, 1: 1124, 2: 993, 3: 1022, 4: 974, 5: 903, 6: 986, 7: 1044, 8: 975, 9: 992}
+2025-12-04T21:21:52+0200 | INFO | qna | [PhiDataset] Z candidates: ['./data\\Z_val_std.npy', './data\\Z_val_std.npy.fp'] | chosen: ./data\Z_val_std.npy
+2025-12-04T21:21:52+0200 | WARNING | qna | [PhiDataset] AngleEncoder: ігнорую невідомі kwargs: ['clip']; дозволені=['angle_max', 'k', 'no_clip']
+2025-12-04T21:21:52+0200 | INFO | qna | [PhiDataset] Побудовано φ з Z: AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793}) | φ∈[-3.142, 3.142], clip-rate≈0.93% | mode=val | cache=True
+2025-12-04T21:21:52+0200 | INFO | qna | [PhiDataset] meta: {'mode': 'val', 'source': 'Z', 'encoder': "AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793})", 'n_qubits': 8, 'cached': True}
+2025-12-04T21:21:52+0200 | INFO | qna | [PhiDataset] mode=val | N=10000, n_qubits=8, n_classes=10 | |phi|_min=-3.14159, |phi|_max=3.14159, |phi|_mean≈1.00464
+2025-12-04T21:21:52+0200 | INFO | qna | [PhiDataset] Розподіл класів: [987, 1124, 993, 1022, 974, 903, 986, 1044, 975, 992]
+2025-12-04T21:21:52+0200 | INFO | qna | [PhiDataset] φ clip-rate≈0.0093 (|φ| близько angle_max=3.14159), діапазон≈[-3.14159, 3.14159]
+2025-12-04T21:21:52+0200 | INFO | qna | Train size: 50000 | Val size: 10000
+2025-12-04T21:21:52+0200 | INFO | qna | [QuantumClassifier] n_qubits=8, out_dim=8, n_classes=10 | device=default.qubit, shots=10, layers=3, topology=ring, encoding=ry, meas=Z, diff=parameter-shift, reupload=True
+2025-12-04T21:21:52+0200 | INFO | qna | Reseed device: 42 -> 42 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-04T21:21:52+0200 | INFO | qna | [QuantumClassifier] param/device seed set to 42
+2025-12-04T21:21:52+0200 | INFO | qna | Reseed quantum device RNG → 42
+2025-12-04T21:21:52+0200 | INFO | qna | Quantum backend: None | shots=10
+2025-12-04T21:21:53+0200 | INFO | qna | Sanity: E=(64, 8) → logits=(64, 10) | n_classes=10 | dry-run 1603.0 ms
+2025-12-04T21:21:53+0200 | WARNING | qna | [optim.registry] Ignoring unsupported kwargs for qnaadam/optimizer: ['alpha', 'mode', 'momentum', 'state_key']
+2025-12-04T21:22:13+0200 | INFO | qna | [optim.registry] created optimizer 'qnaadam' (groups=1) with keys=['amsgrad', 'betas', 'clip_in_optimizer', 'eps', 'error_if_nonfinite', 'grad_eps', 'lambda_var', 'lr', 'lr_max_mult', 'lr_min_mult', 'max_norm', 'maximize', 'vtilde_key', 'weight_decay']
+2025-12-04T21:22:13+0200 | INFO | qna | Оптимізатор з registry: qna_adam
+2025-12-04T21:22:13+0200 | INFO | qna | EarlyStopping: disabled (enabled=false).
+2025-12-04T21:22:13+0200 | INFO | qna | Старт тренування: epochs=20, batch_size=64, grad_clip=0.00, shots=10
+2025-12-04T21:22:14+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=10, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}
+2025-12-04T21:23:16+0200 | INFO | qna | [QNAAdam] options: clip_in_optimizer=False | max_norm=[1.0] | error_if_nonfinite=False | grad_eps=[1e-06] | lambda_var=[0.0] | lr_min_mult=[0.2] | lr_max_mult=[1.0] | vtilde_key(s)=['qna_vtilde']
+2025-12-05T10:54:16+0200 | INFO | qna | [Epoch 1] train: loss=2.3015, acc=0.120, ‖∇‖raw=0.172, ‖∇‖=0.172, clip_rate=0.00, V~=4.460e-02, shots=10 | scale_mean=1.000 p90=1.000
+2025-12-05T10:54:16+0200 | INFO | qna | Switch shots: 10 -> 2048 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 2048, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-05T10:54:16+0200 | INFO | qna | [QuantumClassifier] shots set to 2048
+2025-12-05T10:54:16+0200 | INFO | qna | Встановлено shots → 2048
+2025-12-05T10:57:33+0200 | INFO | qna | [Epoch 1]   val: loss=2.2736, acc=0.151 (eval_shots=2048)
+2025-12-05T10:57:33+0200 | INFO | qna | Збережено найкращу модель (val_loss=2.273594) → ./runs\EXP_20251204_212151_optqnaadam_measz_encry_nq8_k25_L3_shots10\model.pt
+2025-12-05T10:57:33+0200 | INFO | qna | Switch shots: 2048 -> 10 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-05T10:57:33+0200 | INFO | qna | [QuantumClassifier] shots set to 10
+2025-12-05T10:57:33+0200 | INFO | qna | Встановлено shots → 10
+2025-12-05T10:57:34+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=10, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}
+2025-12-06T00:29:08+0200 | INFO | qna | [Epoch 2] train: loss=2.2595, acc=0.143, ‖∇‖raw=0.191, ‖∇‖=0.191, clip_rate=0.00, V~=4.449e-02, shots=10 | scale_mean=1.000 p90=1.000
+2025-12-06T00:29:08+0200 | INFO | qna | Switch shots: 10 -> 2048 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 2048, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-06T00:29:08+0200 | INFO | qna | [QuantumClassifier] shots set to 2048
+2025-12-06T00:29:08+0200 | INFO | qna | Встановлено shots → 2048
+2025-12-06T00:32:24+0200 | INFO | qna | [Epoch 2]   val: loss=2.2182, acc=0.188 (eval_shots=2048)
+2025-12-06T00:32:24+0200 | INFO | qna | Збережено найкращу модель (val_loss=2.218202) → ./runs\EXP_20251204_212151_optqnaadam_measz_encry_nq8_k25_L3_shots10\model.pt
+2025-12-06T00:32:24+0200 | INFO | qna | Switch shots: 2048 -> 10 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-06T00:32:24+0200 | INFO | qna | [QuantumClassifier] shots set to 10
+2025-12-06T00:32:24+0200 | INFO | qna | Встановлено shots → 10
+2025-12-06T00:32:26+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=10, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}
+2025-12-06T14:06:12+0200 | INFO | qna | [Epoch 3] train: loss=2.2438, acc=0.154, ‖∇‖raw=0.213, ‖∇‖=0.213, clip_rate=0.00, V~=4.443e-02, shots=10 | scale_mean=1.000 p90=1.000
+2025-12-06T14:06:12+0200 | INFO | qna | Switch shots: 10 -> 2048 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 2048, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-06T14:06:12+0200 | INFO | qna | [QuantumClassifier] shots set to 2048
+2025-12-06T14:06:12+0200 | INFO | qna | Встановлено shots → 2048
+2025-12-06T14:09:31+0200 | INFO | qna | [Epoch 3]   val: loss=2.2010, acc=0.209 (eval_shots=2048)
+2025-12-06T14:09:31+0200 | INFO | qna | Збережено найкращу модель (val_loss=2.201021) → ./runs\EXP_20251204_212151_optqnaadam_measz_encry_nq8_k25_L3_shots10\model.pt
+2025-12-06T14:09:31+0200 | INFO | qna | Switch shots: 2048 -> 10 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-06T14:09:31+0200 | INFO | qna | [QuantumClassifier] shots set to 10
+2025-12-06T14:09:31+0200 | INFO | qna | Встановлено shots → 10
+2025-12-06T14:09:33+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=10, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}
+2025-12-07T09:48:40+0200 | INFO | qna | [Epoch 4] train: loss=2.2348, acc=0.159, ‖∇‖raw=0.221, ‖∇‖=0.221, clip_rate=0.00, V~=4.438e-02, shots=10 | scale_mean=1.000 p90=1.000
+2025-12-07T09:48:40+0200 | INFO | qna | Switch shots: 10 -> 2048 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 2048, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-07T09:48:40+0200 | INFO | qna | [QuantumClassifier] shots set to 2048
+2025-12-07T09:48:40+0200 | INFO | qna | Встановлено shots → 2048
+2025-12-07T09:52:18+0200 | INFO | qna | [Epoch 4]   val: loss=2.1903, acc=0.202 (eval_shots=2048)
+2025-12-07T09:52:18+0200 | INFO | qna | Збережено найкращу модель (val_loss=2.190307) → ./runs\EXP_20251204_212151_optqnaadam_measz_encry_nq8_k25_L3_shots10\model.pt
+2025-12-07T09:52:18+0200 | INFO | qna | Switch shots: 2048 -> 10 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-07T09:52:18+0200 | INFO | qna | [QuantumClassifier] shots set to 10
+2025-12-07T09:52:18+0200 | INFO | qna | Встановлено shots → 10
+2025-12-07T09:52:19+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=10, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}
+2025-12-09T14:15:05+0200 | INFO | qna | [Epoch 5] train: loss=2.2259, acc=0.160, ‖∇‖raw=0.224, ‖∇‖=0.224, clip_rate=0.00, V~=4.433e-02, shots=10 | scale_mean=1.000 p90=1.000
+2025-12-09T14:15:05+0200 | INFO | qna | Switch shots: 10 -> 2048 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 2048, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-09T14:15:05+0200 | INFO | qna | [QuantumClassifier] shots set to 2048
+2025-12-09T14:15:05+0200 | INFO | qna | Встановлено shots → 2048
+2025-12-09T14:18:31+0200 | INFO | qna | [Epoch 5]   val: loss=2.1754, acc=0.213 (eval_shots=2048)
+2025-12-09T14:18:31+0200 | INFO | qna | Збережено найкращу модель (val_loss=2.175420) → ./runs\EXP_20251204_212151_optqnaadam_measz_encry_nq8_k25_L3_shots10\model.pt
+2025-12-09T14:18:31+0200 | INFO | qna | Switch shots: 2048 -> 10 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-09T14:18:31+0200 | INFO | qna | [QuantumClassifier] shots set to 10
+2025-12-09T14:18:31+0200 | INFO | qna | Встановлено shots → 10
+2025-12-09T14:18:33+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=10, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}
+2025-12-10T10:36:49+0200 | INFO | qna | [Epoch 6] train: loss=2.2186, acc=0.164, ‖∇‖raw=0.228, ‖∇‖=0.228, clip_rate=0.00, V~=4.430e-02, shots=10 | scale_mean=1.000 p90=1.000
+2025-12-10T10:36:50+0200 | INFO | qna | Switch shots: 10 -> 2048 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 2048, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-10T10:36:50+0200 | INFO | qna | [QuantumClassifier] shots set to 2048
+2025-12-10T10:36:50+0200 | INFO | qna | Встановлено shots → 2048
+2025-12-10T10:40:02+0200 | INFO | qna | [Epoch 6]   val: loss=2.1698, acc=0.212 (eval_shots=2048)
+2025-12-10T10:40:04+0200 | INFO | qna | Збережено найкращу модель (val_loss=2.169788) → ./runs\EXP_20251204_212151_optqnaadam_measz_encry_nq8_k25_L3_shots10\model.pt
+2025-12-10T10:40:04+0200 | INFO | qna | Switch shots: 2048 -> 10 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-10T10:40:04+0200 | INFO | qna | [QuantumClassifier] shots set to 10
+2025-12-10T10:40:04+0200 | INFO | qna | Встановлено shots → 10
+2025-12-10T10:40:05+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=10, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}
+2025-12-12T10:02:46+0200 | INFO | qna | Конфіг завантажено з: config.yaml
+2025-12-12T10:02:46+0200 | INFO | qna | Конфіг | n_qubits=8 | n_layers=3 | topology=ring | enc=ry | meas=Z | device=default.qubit | shots=10 | diff=parameter-shift
+2025-12-12T10:02:46+0200 | INFO | qna | Навчання | batch_size=64 | epochs=20 | lr=0.001 | grad_clip=0.00 | n_classes=10
+2025-12-12T10:02:46+0200 | INFO | qna | Дані    | train=./data/train_phi_cls0123.npz | val=./data/val_phi_cls0123.npz | angle_max=3.141592653589793 | k=2.5
+2025-12-12T10:02:46+0200 | INFO | qna | seed_everything: встановлено сид=42 (random/numpy/torch)
+2025-12-12T10:02:46+0200 | INFO | qna | Сіди через seed_everything(seed=42, deterministic_torch=False)
+2025-12-12T10:02:46+0200 | INFO | qna | Run name: EXP_20251212_100246_optqnaadam_measz_encry_nq8_k25_L3_shots10
+2025-12-12T10:02:46+0200 | INFO | qna | Run dir:  ./runs\EXP_20251212_100246_optqnaadam_measz_encry_nq8_k25_L3_shots10
+2025-12-12T10:02:46+0200 | INFO | qna | Збережено snapshot конфігу: ./runs\EXP_20251212_100246_optqnaadam_measz_encry_nq8_k25_L3_shots10\config.snapshot.yaml
+2025-12-12T10:02:46+0200 | INFO | qna | Артефакти будуть у: ./runs\EXP_20251212_100246_optqnaadam_measz_encry_nq8_k25_L3_shots10
+2025-12-12T10:02:46+0200 | INFO | qna | [PhiDataset] init: mode=train | path='./data' | suf='' | use_suf=True | target_classes=None
+2025-12-12T10:02:46+0200 | INFO | qna | [PhiDataset] init: cfg pca.dim=8
+2025-12-12T10:02:46+0200 | INFO | qna | [PhiDataset] y_path=./data\y_train.npy
+2025-12-12T10:02:46+0200 | INFO | qna | [PhiDataset] y: shape=(50000,), dtype=int64, uniques={0: 4936, 1: 5618, 2: 4965, 3: 5109, 4: 4868, 5: 4518, 6: 4932, 7: 5221, 8: 4876, 9: 4957}
+2025-12-12T10:02:46+0200 | INFO | qna | [PhiDataset] Z candidates: ['./data\\Z_train_std.npy', './data\\Z_train_std.npy.fp'] | chosen: ./data\Z_train_std.npy
+2025-12-12T10:02:46+0200 | WARNING | qna | [PhiDataset] AngleEncoder: ігнорую невідомі kwargs: ['clip']; дозволені=['angle_max', 'k', 'no_clip']
+2025-12-12T10:02:47+0200 | INFO | qna | [PhiDataset] Побудовано φ з Z: AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793}) | φ∈[-3.142, 3.142], clip-rate≈0.98% | mode=train | cache=True
+2025-12-12T10:02:47+0200 | INFO | qna | [PhiDataset] meta: {'mode': 'train', 'source': 'Z', 'encoder': "AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793})", 'n_qubits': 8, 'cached': True}
+2025-12-12T10:02:48+0200 | INFO | qna | [PhiDataset] mode=train | N=50000, n_qubits=8, n_classes=10 | |phi|_min=-3.14159, |phi|_max=3.14159, |phi|_mean≈1.00704
+2025-12-12T10:02:48+0200 | INFO | qna | [PhiDataset] Розподіл класів: [4936, 5618, 4965, 5109, 4868, 4518, 4932, 5221, 4876, 4957]
+2025-12-12T10:02:48+0200 | INFO | qna | [PhiDataset] φ clip-rate≈0.0098 (|φ| близько angle_max=3.14159), діапазон≈[-3.14159, 3.14159]
+2025-12-12T10:02:48+0200 | INFO | qna | [PhiDataset] init: mode=val | path='./data' | suf='' | use_suf=True | target_classes=None
+2025-12-12T10:02:48+0200 | INFO | qna | [PhiDataset] init: cfg pca.dim=8
+2025-12-12T10:02:48+0200 | INFO | qna | [PhiDataset] y_path=./data\y_val.npy
+2025-12-12T10:02:48+0200 | INFO | qna | [PhiDataset] y: shape=(10000,), dtype=int64, uniques={0: 987, 1: 1124, 2: 993, 3: 1022, 4: 974, 5: 903, 6: 986, 7: 1044, 8: 975, 9: 992}
+2025-12-12T10:02:48+0200 | INFO | qna | [PhiDataset] Z candidates: ['./data\\Z_val_std.npy', './data\\Z_val_std.npy.fp'] | chosen: ./data\Z_val_std.npy
+2025-12-12T10:02:48+0200 | WARNING | qna | [PhiDataset] AngleEncoder: ігнорую невідомі kwargs: ['clip']; дозволені=['angle_max', 'k', 'no_clip']
+2025-12-12T10:02:48+0200 | INFO | qna | [PhiDataset] Побудовано φ з Z: AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793}) | φ∈[-3.142, 3.142], clip-rate≈0.93% | mode=val | cache=True
+2025-12-12T10:02:48+0200 | INFO | qna | [PhiDataset] meta: {'mode': 'val', 'source': 'Z', 'encoder': "AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793})", 'n_qubits': 8, 'cached': True}
+2025-12-12T10:02:48+0200 | INFO | qna | [PhiDataset] mode=val | N=10000, n_qubits=8, n_classes=10 | |phi|_min=-3.14159, |phi|_max=3.14159, |phi|_mean≈1.00464
+2025-12-12T10:02:48+0200 | INFO | qna | [PhiDataset] Розподіл класів: [987, 1124, 993, 1022, 974, 903, 986, 1044, 975, 992]
+2025-12-12T10:02:48+0200 | INFO | qna | [PhiDataset] φ clip-rate≈0.0093 (|φ| близько angle_max=3.14159), діапазон≈[-3.14159, 3.14159]
+2025-12-12T10:02:48+0200 | INFO | qna | Train size: 50000 | Val size: 10000
+2025-12-12T10:02:52+0200 | INFO | qna | [QuantumClassifier] n_qubits=8, out_dim=8, n_classes=10 | device=default.qubit, shots=10, layers=3, topology=ring, encoding=ry, meas=Z, diff=parameter-shift, reupload=True
+2025-12-12T10:02:52+0200 | INFO | qna | Reseed device: 42 -> 42 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-12T10:02:52+0200 | INFO | qna | [QuantumClassifier] param/device seed set to 42
+2025-12-12T10:02:52+0200 | INFO | qna | Reseed quantum device RNG → 42
+2025-12-12T10:02:52+0200 | INFO | qna | Quantum backend: None | shots=10
+2025-12-12T10:02:57+0200 | INFO | qna | Sanity: E=(64, 8) → logits=(64, 10) | n_classes=10 | dry-run 4043.7 ms
+2025-12-12T10:02:57+0200 | WARNING | qna | [optim.registry] Ignoring unsupported kwargs for qnaadam/optimizer: ['alpha', 'mode', 'momentum', 'state_key']
+2025-12-12T10:03:24+0200 | INFO | qna | [optim.registry] created optimizer 'qnaadam' (groups=1) with keys=['amsgrad', 'betas', 'clip_in_optimizer', 'eps', 'error_if_nonfinite', 'grad_eps', 'lambda_var', 'lr', 'lr_max_mult', 'lr_min_mult', 'max_norm', 'maximize', 'vtilde_key', 'weight_decay']
+2025-12-12T10:03:24+0200 | INFO | qna | Оптимізатор з registry: qna_adam
+2025-12-12T10:03:24+0200 | INFO | qna | EarlyStopping: disabled (enabled=false).
+2025-12-12T10:03:24+0200 | INFO | qna | Старт тренування: epochs=20, batch_size=64, grad_clip=0.00, shots=10
+2025-12-12T10:03:27+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=10, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}
+2025-12-12T10:05:18+0200 | INFO | qna | Конфіг завантажено з: config.yaml
+2025-12-12T10:05:18+0200 | INFO | qna | Конфіг | n_qubits=8 | n_layers=3 | topology=ring | enc=ry | meas=Z | device=default.qubit | shots=30 | diff=parameter-shift
+2025-12-12T10:05:18+0200 | INFO | qna | Навчання | batch_size=64 | epochs=20 | lr=0.001 | grad_clip=0.00 | n_classes=10
+2025-12-12T10:05:18+0200 | INFO | qna | Дані    | train=./data/train_phi_cls0123.npz | val=./data/val_phi_cls0123.npz | angle_max=3.141592653589793 | k=2.5
+2025-12-12T10:05:18+0200 | INFO | qna | seed_everything: встановлено сид=42 (random/numpy/torch)
+2025-12-12T10:05:18+0200 | INFO | qna | Сіди через seed_everything(seed=42, deterministic_torch=False)
+2025-12-12T10:05:18+0200 | INFO | qna | Run name: EXP_20251212_100518_optqnaadam_measz_encry_nq8_k25_L3_shots30
+2025-12-12T10:05:18+0200 | INFO | qna | Run dir:  ./runs\EXP_20251212_100518_optqnaadam_measz_encry_nq8_k25_L3_shots30
+2025-12-12T10:05:18+0200 | INFO | qna | Збережено snapshot конфігу: ./runs\EXP_20251212_100518_optqnaadam_measz_encry_nq8_k25_L3_shots30\config.snapshot.yaml
+2025-12-12T10:05:18+0200 | INFO | qna | Артефакти будуть у: ./runs\EXP_20251212_100518_optqnaadam_measz_encry_nq8_k25_L3_shots30
+2025-12-12T10:05:18+0200 | INFO | qna | [PhiDataset] init: mode=train | path='./data' | suf='' | use_suf=True | target_classes=None
+2025-12-12T10:05:18+0200 | INFO | qna | [PhiDataset] init: cfg pca.dim=8
+2025-12-12T10:05:18+0200 | INFO | qna | [PhiDataset] y_path=./data\y_train.npy
+2025-12-12T10:05:18+0200 | INFO | qna | [PhiDataset] y: shape=(50000,), dtype=int64, uniques={0: 4936, 1: 5618, 2: 4965, 3: 5109, 4: 4868, 5: 4518, 6: 4932, 7: 5221, 8: 4876, 9: 4957}
+2025-12-12T10:05:18+0200 | INFO | qna | [PhiDataset] Z candidates: ['./data\\Z_train_std.npy', './data\\Z_train_std.npy.fp'] | chosen: ./data\Z_train_std.npy
+2025-12-12T10:05:18+0200 | WARNING | qna | [PhiDataset] AngleEncoder: ігнорую невідомі kwargs: ['clip']; дозволені=['angle_max', 'k', 'no_clip']
+2025-12-12T10:05:19+0200 | INFO | qna | [PhiDataset] Побудовано φ з Z: AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793}) | φ∈[-3.142, 3.142], clip-rate≈0.98% | mode=train | cache=True
+2025-12-12T10:05:19+0200 | INFO | qna | [PhiDataset] meta: {'mode': 'train', 'source': 'Z', 'encoder': "AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793})", 'n_qubits': 8, 'cached': True}
+2025-12-12T10:05:19+0200 | INFO | qna | [PhiDataset] mode=train | N=50000, n_qubits=8, n_classes=10 | |phi|_min=-3.14159, |phi|_max=3.14159, |phi|_mean≈1.00704
+2025-12-12T10:05:19+0200 | INFO | qna | [PhiDataset] Розподіл класів: [4936, 5618, 4965, 5109, 4868, 4518, 4932, 5221, 4876, 4957]
+2025-12-12T10:05:19+0200 | INFO | qna | [PhiDataset] φ clip-rate≈0.0098 (|φ| близько angle_max=3.14159), діапазон≈[-3.14159, 3.14159]
+2025-12-12T10:05:19+0200 | INFO | qna | [PhiDataset] init: mode=val | path='./data' | suf='' | use_suf=True | target_classes=None
+2025-12-12T10:05:19+0200 | INFO | qna | [PhiDataset] init: cfg pca.dim=8
+2025-12-12T10:05:19+0200 | INFO | qna | [PhiDataset] y_path=./data\y_val.npy
+2025-12-12T10:05:19+0200 | INFO | qna | [PhiDataset] y: shape=(10000,), dtype=int64, uniques={0: 987, 1: 1124, 2: 993, 3: 1022, 4: 974, 5: 903, 6: 986, 7: 1044, 8: 975, 9: 992}
+2025-12-12T10:05:19+0200 | INFO | qna | [PhiDataset] Z candidates: ['./data\\Z_val_std.npy', './data\\Z_val_std.npy.fp'] | chosen: ./data\Z_val_std.npy
+2025-12-12T10:05:19+0200 | WARNING | qna | [PhiDataset] AngleEncoder: ігнорую невідомі kwargs: ['clip']; дозволені=['angle_max', 'k', 'no_clip']
+2025-12-12T10:05:19+0200 | INFO | qna | [PhiDataset] Побудовано φ з Z: AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793}) | φ∈[-3.142, 3.142], clip-rate≈0.93% | mode=val | cache=True
+2025-12-12T10:05:19+0200 | INFO | qna | [PhiDataset] meta: {'mode': 'val', 'source': 'Z', 'encoder': "AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793})", 'n_qubits': 8, 'cached': True}
+2025-12-12T10:05:19+0200 | INFO | qna | [PhiDataset] mode=val | N=10000, n_qubits=8, n_classes=10 | |phi|_min=-3.14159, |phi|_max=3.14159, |phi|_mean≈1.00464
+2025-12-12T10:05:19+0200 | INFO | qna | [PhiDataset] Розподіл класів: [987, 1124, 993, 1022, 974, 903, 986, 1044, 975, 992]
+2025-12-12T10:05:19+0200 | INFO | qna | [PhiDataset] φ clip-rate≈0.0093 (|φ| близько angle_max=3.14159), діапазон≈[-3.14159, 3.14159]
+2025-12-12T10:05:19+0200 | INFO | qna | Train size: 50000 | Val size: 10000
+2025-12-12T10:05:19+0200 | INFO | qna | [QuantumClassifier] n_qubits=8, out_dim=8, n_classes=10 | device=default.qubit, shots=30, layers=3, topology=ring, encoding=ry, meas=Z, diff=parameter-shift, reupload=True
+2025-12-12T10:05:19+0200 | INFO | qna | Reseed device: 42 -> 42 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 30, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-12T10:05:19+0200 | INFO | qna | [QuantumClassifier] param/device seed set to 42
+2025-12-12T10:05:19+0200 | INFO | qna | Reseed quantum device RNG → 42
+2025-12-12T10:05:19+0200 | INFO | qna | Quantum backend: None | shots=30
+2025-12-12T10:05:20+0200 | INFO | qna | Sanity: E=(64, 8) → logits=(64, 10) | n_classes=10 | dry-run 1450.4 ms
+2025-12-12T10:05:20+0200 | WARNING | qna | [optim.registry] Ignoring unsupported kwargs for qnaadam/optimizer: ['alpha', 'mode', 'momentum', 'state_key']
+2025-12-12T10:05:29+0200 | INFO | qna | [optim.registry] created optimizer 'qnaadam' (groups=1) with keys=['amsgrad', 'betas', 'clip_in_optimizer', 'eps', 'error_if_nonfinite', 'grad_eps', 'lambda_var', 'lr', 'lr_max_mult', 'lr_min_mult', 'max_norm', 'maximize', 'vtilde_key', 'weight_decay']
+2025-12-12T10:05:29+0200 | INFO | qna | Оптимізатор з registry: qna_adam
+2025-12-12T10:05:29+0200 | INFO | qna | EarlyStopping: disabled (enabled=false).
+2025-12-12T10:05:29+0200 | INFO | qna | Старт тренування: epochs=20, batch_size=64, grad_clip=0.00, shots=30
+2025-12-12T10:05:30+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=30, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 30, 'analytic': False}
+2025-12-12T10:06:37+0200 | INFO | qna | [QNAAdam] options: clip_in_optimizer=False | max_norm=[1.0] | error_if_nonfinite=False | grad_eps=[1e-06] | lambda_var=[0.0] | lr_min_mult=[0.2] | lr_max_mult=[1.0] | vtilde_key(s)=['qna_vtilde']
+2025-12-12T10:07:34+0200 | INFO | qna | Конфіг завантажено з: config.yaml
+2025-12-12T10:07:34+0200 | INFO | qna | Конфіг | n_qubits=8 | n_layers=3 | topology=ring | enc=ry | meas=Z | device=default.qubit | shots=15 | diff=parameter-shift
+2025-12-12T10:07:34+0200 | INFO | qna | Навчання | batch_size=64 | epochs=20 | lr=0.001 | grad_clip=0.00 | n_classes=10
+2025-12-12T10:07:34+0200 | INFO | qna | Дані    | train=./data/train_phi_cls0123.npz | val=./data/val_phi_cls0123.npz | angle_max=3.141592653589793 | k=2.5
+2025-12-12T10:07:34+0200 | INFO | qna | seed_everything: встановлено сид=42 (random/numpy/torch)
+2025-12-12T10:07:34+0200 | INFO | qna | Сіди через seed_everything(seed=42, deterministic_torch=False)
+2025-12-12T10:07:34+0200 | INFO | qna | Run name: EXP_20251212_100734_optqnaadam_measz_encry_nq8_k25_L3_shots15
+2025-12-12T10:07:34+0200 | INFO | qna | Run dir:  ./runs\EXP_20251212_100734_optqnaadam_measz_encry_nq8_k25_L3_shots15
+2025-12-12T10:07:34+0200 | INFO | qna | Збережено snapshot конфігу: ./runs\EXP_20251212_100734_optqnaadam_measz_encry_nq8_k25_L3_shots15\config.snapshot.yaml
+2025-12-12T10:07:34+0200 | INFO | qna | Артефакти будуть у: ./runs\EXP_20251212_100734_optqnaadam_measz_encry_nq8_k25_L3_shots15
+2025-12-12T10:07:34+0200 | INFO | qna | [PhiDataset] init: mode=train | path='./data' | suf='' | use_suf=True | target_classes=None
+2025-12-12T10:07:34+0200 | INFO | qna | [PhiDataset] init: cfg pca.dim=8
+2025-12-12T10:07:34+0200 | INFO | qna | [PhiDataset] y_path=./data\y_train.npy
+2025-12-12T10:07:34+0200 | INFO | qna | [PhiDataset] y: shape=(50000,), dtype=int64, uniques={0: 4936, 1: 5618, 2: 4965, 3: 5109, 4: 4868, 5: 4518, 6: 4932, 7: 5221, 8: 4876, 9: 4957}
+2025-12-12T10:07:34+0200 | INFO | qna | [PhiDataset] Z candidates: ['./data\\Z_train_std.npy', './data\\Z_train_std.npy.fp'] | chosen: ./data\Z_train_std.npy
+2025-12-12T10:07:34+0200 | WARNING | qna | [PhiDataset] AngleEncoder: ігнорую невідомі kwargs: ['clip']; дозволені=['angle_max', 'k', 'no_clip']
+2025-12-12T10:07:34+0200 | INFO | qna | [PhiDataset] Побудовано φ з Z: AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793}) | φ∈[-3.142, 3.142], clip-rate≈0.98% | mode=train | cache=True
+2025-12-12T10:07:34+0200 | INFO | qna | [PhiDataset] meta: {'mode': 'train', 'source': 'Z', 'encoder': "AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793})", 'n_qubits': 8, 'cached': True}
+2025-12-12T10:07:34+0200 | INFO | qna | [PhiDataset] mode=train | N=50000, n_qubits=8, n_classes=10 | |phi|_min=-3.14159, |phi|_max=3.14159, |phi|_mean≈1.00704
+2025-12-12T10:07:34+0200 | INFO | qna | [PhiDataset] Розподіл класів: [4936, 5618, 4965, 5109, 4868, 4518, 4932, 5221, 4876, 4957]
+2025-12-12T10:07:34+0200 | INFO | qna | [PhiDataset] φ clip-rate≈0.0098 (|φ| близько angle_max=3.14159), діапазон≈[-3.14159, 3.14159]
+2025-12-12T10:07:34+0200 | INFO | qna | [PhiDataset] init: mode=val | path='./data' | suf='' | use_suf=True | target_classes=None
+2025-12-12T10:07:34+0200 | INFO | qna | [PhiDataset] init: cfg pca.dim=8
+2025-12-12T10:07:34+0200 | INFO | qna | [PhiDataset] y_path=./data\y_val.npy
+2025-12-12T10:07:34+0200 | INFO | qna | [PhiDataset] y: shape=(10000,), dtype=int64, uniques={0: 987, 1: 1124, 2: 993, 3: 1022, 4: 974, 5: 903, 6: 986, 7: 1044, 8: 975, 9: 992}
+2025-12-12T10:07:34+0200 | INFO | qna | [PhiDataset] Z candidates: ['./data\\Z_val_std.npy', './data\\Z_val_std.npy.fp'] | chosen: ./data\Z_val_std.npy
+2025-12-12T10:07:34+0200 | WARNING | qna | [PhiDataset] AngleEncoder: ігнорую невідомі kwargs: ['clip']; дозволені=['angle_max', 'k', 'no_clip']
+2025-12-12T10:07:34+0200 | INFO | qna | [PhiDataset] Побудовано φ з Z: AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793}) | φ∈[-3.142, 3.142], clip-rate≈0.93% | mode=val | cache=True
+2025-12-12T10:07:34+0200 | INFO | qna | [PhiDataset] meta: {'mode': 'val', 'source': 'Z', 'encoder': "AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793})", 'n_qubits': 8, 'cached': True}
+2025-12-12T10:07:34+0200 | INFO | qna | [PhiDataset] mode=val | N=10000, n_qubits=8, n_classes=10 | |phi|_min=-3.14159, |phi|_max=3.14159, |phi|_mean≈1.00464
+2025-12-12T10:07:34+0200 | INFO | qna | [PhiDataset] Розподіл класів: [987, 1124, 993, 1022, 974, 903, 986, 1044, 975, 992]
+2025-12-12T10:07:34+0200 | INFO | qna | [PhiDataset] φ clip-rate≈0.0093 (|φ| близько angle_max=3.14159), діапазон≈[-3.14159, 3.14159]
+2025-12-12T10:07:34+0200 | INFO | qna | Train size: 50000 | Val size: 10000
+2025-12-12T10:07:34+0200 | INFO | qna | [QuantumClassifier] n_qubits=8, out_dim=8, n_classes=10 | device=default.qubit, shots=15, layers=3, topology=ring, encoding=ry, meas=Z, diff=parameter-shift, reupload=True
+2025-12-12T10:07:34+0200 | INFO | qna | Reseed device: 42 -> 42 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 15, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-12T10:07:34+0200 | INFO | qna | [QuantumClassifier] param/device seed set to 42
+2025-12-12T10:07:34+0200 | INFO | qna | Reseed quantum device RNG → 42
+2025-12-12T10:07:34+0200 | INFO | qna | Quantum backend: None | shots=15
+2025-12-12T10:07:36+0200 | INFO | qna | Sanity: E=(64, 8) → logits=(64, 10) | n_classes=10 | dry-run 1397.0 ms
+2025-12-12T10:07:36+0200 | WARNING | qna | [optim.registry] Ignoring unsupported kwargs for qnaadam/optimizer: ['alpha', 'mode', 'momentum', 'state_key']
+2025-12-12T10:07:39+0200 | INFO | qna | [optim.registry] created optimizer 'qnaadam' (groups=1) with keys=['amsgrad', 'betas', 'clip_in_optimizer', 'eps', 'error_if_nonfinite', 'grad_eps', 'lambda_var', 'lr', 'lr_max_mult', 'lr_min_mult', 'max_norm', 'maximize', 'vtilde_key', 'weight_decay']
+2025-12-12T10:07:39+0200 | INFO | qna | Оптимізатор з registry: qna_adam
+2025-12-12T10:07:39+0200 | INFO | qna | EarlyStopping: disabled (enabled=false).
+2025-12-12T10:07:39+0200 | INFO | qna | Старт тренування: epochs=20, batch_size=64, grad_clip=0.00, shots=15
+2025-12-12T10:07:40+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=15, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 15, 'analytic': False}
+2025-12-12T10:08:29+0200 | INFO | qna | Конфіг завантажено з: config.yaml
+2025-12-12T10:08:29+0200 | INFO | qna | Конфіг | n_qubits=8 | n_layers=3 | topology=ring | enc=ry | meas=Z | device=default.qubit | shots=15 | diff=parameter-shift
+2025-12-12T10:08:29+0200 | INFO | qna | Навчання | batch_size=64 | epochs=20 | lr=0.001 | grad_clip=0.00 | n_classes=10
+2025-12-12T10:08:29+0200 | INFO | qna | Дані    | train=./data/train_phi_cls0123.npz | val=./data/val_phi_cls0123.npz | angle_max=3.141592653589793 | k=2.5
+2025-12-12T10:08:29+0200 | INFO | qna | seed_everything: встановлено сид=42 (random/numpy/torch)
+2025-12-12T10:08:29+0200 | INFO | qna | Сіди через seed_everything(seed=42, deterministic_torch=False)
+2025-12-12T10:08:29+0200 | INFO | qna | Run name: EXP_20251212_100829_optqnaadam_measz_encry_nq8_k25_L3_shots15
+2025-12-12T10:08:29+0200 | INFO | qna | Run dir:  ./runs\EXP_20251212_100829_optqnaadam_measz_encry_nq8_k25_L3_shots15
+2025-12-12T10:08:29+0200 | INFO | qna | Збережено snapshot конфігу: ./runs\EXP_20251212_100829_optqnaadam_measz_encry_nq8_k25_L3_shots15\config.snapshot.yaml
+2025-12-12T10:08:29+0200 | INFO | qna | Артефакти будуть у: ./runs\EXP_20251212_100829_optqnaadam_measz_encry_nq8_k25_L3_shots15
+2025-12-12T10:08:29+0200 | INFO | qna | [PhiDataset] init: mode=train | path='./data' | suf='' | use_suf=True | target_classes=None
+2025-12-12T10:08:29+0200 | INFO | qna | [PhiDataset] init: cfg pca.dim=8
+2025-12-12T10:08:29+0200 | INFO | qna | [PhiDataset] y_path=./data\y_train.npy
+2025-12-12T10:08:29+0200 | INFO | qna | [PhiDataset] y: shape=(50000,), dtype=int64, uniques={0: 4936, 1: 5618, 2: 4965, 3: 5109, 4: 4868, 5: 4518, 6: 4932, 7: 5221, 8: 4876, 9: 4957}
+2025-12-12T10:08:29+0200 | INFO | qna | [PhiDataset] Z candidates: ['./data\\Z_train_std.npy', './data\\Z_train_std.npy.fp'] | chosen: ./data\Z_train_std.npy
+2025-12-12T10:08:29+0200 | WARNING | qna | [PhiDataset] AngleEncoder: ігнорую невідомі kwargs: ['clip']; дозволені=['angle_max', 'k', 'no_clip']
+2025-12-12T10:08:29+0200 | INFO | qna | [PhiDataset] Побудовано φ з Z: AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793}) | φ∈[-3.142, 3.142], clip-rate≈0.98% | mode=train | cache=True
+2025-12-12T10:08:29+0200 | INFO | qna | [PhiDataset] meta: {'mode': 'train', 'source': 'Z', 'encoder': "AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793})", 'n_qubits': 8, 'cached': True}
+2025-12-12T10:08:29+0200 | INFO | qna | [PhiDataset] mode=train | N=50000, n_qubits=8, n_classes=10 | |phi|_min=-3.14159, |phi|_max=3.14159, |phi|_mean≈1.00704
+2025-12-12T10:08:29+0200 | INFO | qna | [PhiDataset] Розподіл класів: [4936, 5618, 4965, 5109, 4868, 4518, 4932, 5221, 4876, 4957]
+2025-12-12T10:08:29+0200 | INFO | qna | [PhiDataset] φ clip-rate≈0.0098 (|φ| близько angle_max=3.14159), діапазон≈[-3.14159, 3.14159]
+2025-12-12T10:08:29+0200 | INFO | qna | [PhiDataset] init: mode=val | path='./data' | suf='' | use_suf=True | target_classes=None
+2025-12-12T10:08:29+0200 | INFO | qna | [PhiDataset] init: cfg pca.dim=8
+2025-12-12T10:08:29+0200 | INFO | qna | [PhiDataset] y_path=./data\y_val.npy
+2025-12-12T10:08:29+0200 | INFO | qna | [PhiDataset] y: shape=(10000,), dtype=int64, uniques={0: 987, 1: 1124, 2: 993, 3: 1022, 4: 974, 5: 903, 6: 986, 7: 1044, 8: 975, 9: 992}
+2025-12-12T10:08:29+0200 | INFO | qna | [PhiDataset] Z candidates: ['./data\\Z_val_std.npy', './data\\Z_val_std.npy.fp'] | chosen: ./data\Z_val_std.npy
+2025-12-12T10:08:29+0200 | WARNING | qna | [PhiDataset] AngleEncoder: ігнорую невідомі kwargs: ['clip']; дозволені=['angle_max', 'k', 'no_clip']
+2025-12-12T10:08:29+0200 | INFO | qna | [PhiDataset] Побудовано φ з Z: AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793}) | φ∈[-3.142, 3.142], clip-rate≈0.93% | mode=val | cache=True
+2025-12-12T10:08:29+0200 | INFO | qna | [PhiDataset] meta: {'mode': 'val', 'source': 'Z', 'encoder': "AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793})", 'n_qubits': 8, 'cached': True}
+2025-12-12T10:08:29+0200 | INFO | qna | [PhiDataset] mode=val | N=10000, n_qubits=8, n_classes=10 | |phi|_min=-3.14159, |phi|_max=3.14159, |phi|_mean≈1.00464
+2025-12-12T10:08:29+0200 | INFO | qna | [PhiDataset] Розподіл класів: [987, 1124, 993, 1022, 974, 903, 986, 1044, 975, 992]
+2025-12-12T10:08:29+0200 | INFO | qna | [PhiDataset] φ clip-rate≈0.0093 (|φ| близько angle_max=3.14159), діапазон≈[-3.14159, 3.14159]
+2025-12-12T10:08:29+0200 | INFO | qna | Train size: 50000 | Val size: 10000
+2025-12-12T10:08:29+0200 | INFO | qna | [QuantumClassifier] n_qubits=8, out_dim=8, n_classes=10 | device=default.qubit, shots=15, layers=3, topology=ring, encoding=ry, meas=Z, diff=parameter-shift, reupload=True
+2025-12-12T10:08:29+0200 | INFO | qna | Reseed device: 42 -> 42 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 15, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-12T10:08:29+0200 | INFO | qna | [QuantumClassifier] param/device seed set to 42
+2025-12-12T10:08:29+0200 | INFO | qna | Reseed quantum device RNG → 42
+2025-12-12T10:08:29+0200 | INFO | qna | Quantum backend: None | shots=15
+2025-12-12T10:08:31+0200 | INFO | qna | Sanity: E=(64, 8) → logits=(64, 10) | n_classes=10 | dry-run 1349.9 ms
+2025-12-12T10:08:31+0200 | WARNING | qna | [optim.registry] Ignoring unsupported kwargs for qnaadam/optimizer: ['alpha', 'mode', 'momentum', 'state_key']
+2025-12-12T10:08:34+0200 | INFO | qna | [optim.registry] created optimizer 'qnaadam' (groups=1) with keys=['amsgrad', 'betas', 'clip_in_optimizer', 'eps', 'error_if_nonfinite', 'grad_eps', 'lambda_var', 'lr', 'lr_max_mult', 'lr_min_mult', 'max_norm', 'maximize', 'vtilde_key', 'weight_decay']
+2025-12-12T10:08:34+0200 | INFO | qna | Оптимізатор з registry: qna_adam
+2025-12-12T10:08:34+0200 | INFO | qna | EarlyStopping: disabled (enabled=false).
+2025-12-12T10:08:34+0200 | INFO | qna | Старт тренування: epochs=20, batch_size=64, grad_clip=0.00, shots=15
+2025-12-12T10:08:35+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=15, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 15, 'analytic': False}
+2025-12-12T10:09:39+0200 | INFO | qna | [QNAAdam] options: clip_in_optimizer=False | max_norm=[1.0] | error_if_nonfinite=False | grad_eps=[1e-06] | lambda_var=[0.0] | lr_min_mult=[0.2] | lr_max_mult=[1.0] | vtilde_key(s)=['qna_vtilde']
+2025-12-13T15:47:22+0200 | INFO | qna | [Epoch 1] train: loss=2.2919, acc=0.130, ‖∇‖raw=0.163, ‖∇‖=0.163, clip_rate=0.00, V~=3.083e-02, shots=15 | scale_mean=1.000 p90=1.000
+2025-12-13T15:47:22+0200 | INFO | qna | Switch shots: 15 -> 2048 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 2048, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-13T15:47:22+0200 | INFO | qna | [QuantumClassifier] shots set to 2048
+2025-12-13T15:47:22+0200 | INFO | qna | Встановлено shots → 2048
+2025-12-13T15:51:01+0200 | INFO | qna | [Epoch 1]   val: loss=2.2459, acc=0.161 (eval_shots=2048)
+2025-12-13T15:51:01+0200 | INFO | qna | Збережено найкращу модель (val_loss=2.245888) → ./runs\EXP_20251212_100829_optqnaadam_measz_encry_nq8_k25_L3_shots15\model.pt
+2025-12-13T15:51:01+0200 | INFO | qna | Switch shots: 2048 -> 15 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 15, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-13T15:51:01+0200 | INFO | qna | [QuantumClassifier] shots set to 15
+2025-12-13T15:51:01+0200 | INFO | qna | Встановлено shots → 15
+2025-12-13T15:51:03+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=15, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 15, 'analytic': False}
+2025-12-15T15:26:07+0200 | INFO | qna | [Epoch 2] train: loss=2.2363, acc=0.154, ‖∇‖raw=0.193, ‖∇‖=0.193, clip_rate=0.00, V~=3.073e-02, shots=15 | scale_mean=1.000 p90=1.000
+2025-12-15T15:26:08+0200 | INFO | qna | Switch shots: 15 -> 2048 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 2048, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-15T15:26:08+0200 | INFO | qna | [QuantumClassifier] shots set to 2048
+2025-12-15T15:26:08+0200 | INFO | qna | Встановлено shots → 2048
+2025-12-15T15:29:37+0200 | INFO | qna | [Epoch 2]   val: loss=2.1789, acc=0.197 (eval_shots=2048)
+2025-12-15T15:29:38+0200 | INFO | qna | Збережено найкращу модель (val_loss=2.178921) → ./runs\EXP_20251212_100829_optqnaadam_measz_encry_nq8_k25_L3_shots15\model.pt
+2025-12-15T15:29:38+0200 | INFO | qna | Switch shots: 2048 -> 15 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 15, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-15T15:29:38+0200 | INFO | qna | [QuantumClassifier] shots set to 15
+2025-12-15T15:29:38+0200 | INFO | qna | Встановлено shots → 15
+2025-12-15T15:29:39+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=15, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 15, 'analytic': False}
+2025-12-16T14:40:41+0200 | INFO | qna | [Epoch 3] train: loss=2.1987, acc=0.169, ‖∇‖raw=0.215, ‖∇‖=0.215, clip_rate=0.00, V~=3.066e-02, shots=15 | scale_mean=1.000 p90=1.000
+2025-12-16T14:40:41+0200 | INFO | qna | Switch shots: 15 -> 2048 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 2048, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-16T14:40:41+0200 | INFO | qna | [QuantumClassifier] shots set to 2048
+2025-12-16T14:40:41+0200 | INFO | qna | Встановлено shots → 2048
+2025-12-16T14:44:04+0200 | INFO | qna | [Epoch 3]   val: loss=2.1401, acc=0.220 (eval_shots=2048)
+2025-12-16T14:44:06+0200 | INFO | qna | Збережено найкращу модель (val_loss=2.140075) → ./runs\EXP_20251212_100829_optqnaadam_measz_encry_nq8_k25_L3_shots15\model.pt
+2025-12-16T14:44:06+0200 | INFO | qna | Switch shots: 2048 -> 15 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 15, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-16T14:44:06+0200 | INFO | qna | [QuantumClassifier] shots set to 15
+2025-12-16T14:44:06+0200 | INFO | qna | Встановлено shots → 15
+2025-12-16T14:44:07+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=15, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 15, 'analytic': False}
+2025-12-19T14:45:46+0200 | INFO | qna | Конфіг завантажено з: config.yaml
+2025-12-19T14:45:46+0200 | INFO | qna | Конфіг | n_qubits=8 | n_layers=3 | topology=ring | enc=ry | meas=Z | device=default.qubit | shots=10 | diff=parameter-shift
+2025-12-19T14:45:46+0200 | INFO | qna | Навчання | batch_size=64 | epochs=20 | lr=0.001 | grad_clip=0.00 | n_classes=10
+2025-12-19T14:45:46+0200 | INFO | qna | Дані    | train=./data/train_phi_cls0123.npz | val=./data/val_phi_cls0123.npz | angle_max=3.141592653589793 | k=2.5
+2025-12-19T14:45:47+0200 | INFO | qna | seed_everything: встановлено сид=42 (random/numpy/torch)
+2025-12-19T14:45:47+0200 | INFO | qna | Сіди через seed_everything(seed=42, deterministic_torch=False)
+2025-12-19T14:45:47+0200 | INFO | qna | Run name: EXP_20251219_144547_optqnaadam_measz_encry_nq8_k25_L3_shots10
+2025-12-19T14:45:47+0200 | INFO | qna | Run dir:  ./runs\EXP_20251219_144547_optqnaadam_measz_encry_nq8_k25_L3_shots10
+2025-12-19T14:51:30+0200 | INFO | qna | Конфіг завантажено з: config.yaml
+2025-12-19T14:51:30+0200 | INFO | qna | Конфіг | n_qubits=8 | n_layers=3 | topology=ring | enc=ry | meas=Z | device=default.qubit | shots=10 | diff=parameter-shift
+2025-12-19T14:51:30+0200 | INFO | qna | Навчання | batch_size=64 | epochs=20 | lr=0.001 | grad_clip=0.00 | n_classes=4
+2025-12-19T14:51:30+0200 | INFO | qna | Дані    | train=./data/train_phi_cls0123.npz | val=./data/val_phi_cls0123.npz | angle_max=3.141592653589793 | k=2.5
+2025-12-19T14:51:30+0200 | INFO | qna | seed_everything: встановлено сид=42 (random/numpy/torch)
+2025-12-19T14:51:30+0200 | INFO | qna | Сіди через seed_everything(seed=42, deterministic_torch=False)
+2025-12-19T14:51:30+0200 | INFO | qna | Run name: EXP_20251219_145130_optqnaadam_measz_encry_nq8_k25_L3_shots10
+2025-12-19T14:51:30+0200 | INFO | qna | Run dir:  ./runs\EXP_20251219_145130_optqnaadam_measz_encry_nq8_k25_L3_shots10
+2025-12-19T14:51:30+0200 | INFO | qna | Збережено snapshot конфігу: ./runs\EXP_20251219_145130_optqnaadam_measz_encry_nq8_k25_L3_shots10\config.snapshot.yaml
+2025-12-19T14:51:30+0200 | INFO | qna | Артефакти будуть у: ./runs\EXP_20251219_145130_optqnaadam_measz_encry_nq8_k25_L3_shots10
+2025-12-19T14:51:30+0200 | INFO | qna | [PhiDataset] init: mode=train | path='./data' | suf='' | use_suf=True | target_classes=None
+2025-12-19T14:51:30+0200 | INFO | qna | [PhiDataset] init: cfg pca.dim=8
+2025-12-19T14:51:30+0200 | INFO | qna | [PhiDataset] y_path=./data\y_train.npy
+2025-12-19T14:51:30+0200 | INFO | qna | [PhiDataset] y: shape=(50000,), dtype=int64, uniques={0: 4936, 1: 5618, 2: 4965, 3: 5109, 4: 4868, 5: 4518, 6: 4932, 7: 5221, 8: 4876, 9: 4957}
+2025-12-19T14:51:30+0200 | INFO | qna | [PhiDataset] Z candidates: ['./data\\Z_train_std.npy', './data\\Z_train_std.npy.fp'] | chosen: ./data\Z_train_std.npy
+2025-12-19T14:51:30+0200 | WARNING | qna | [PhiDataset] AngleEncoder: ігнорую невідомі kwargs: ['clip']; дозволені=['angle_max', 'k', 'no_clip']
+2025-12-19T14:51:30+0200 | INFO | qna | [PhiDataset] Побудовано φ з Z: AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793}) | φ∈[-3.142, 3.142], clip-rate≈0.98% | mode=train | cache=True
+2025-12-19T14:51:30+0200 | INFO | qna | [PhiDataset] meta: {'mode': 'train', 'source': 'Z', 'encoder': "AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793})", 'n_qubits': 8, 'cached': True}
+2025-12-19T14:51:31+0200 | ERROR | qna | Помилка під час тренування: [PhiDataset] Значення y виходить за межі n_classes=4: max(y)=9
+Traceback (most recent call last):
+  File "D:\Code\qna\Code\trainers\train_quantum.py", line 740, in main
+    train_loader, val_loader = _build_loaders(config, seed, logger)
+                               ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Code\qna\Code\trainers\train_quantum.py", line 459, in _build_loaders
+    train_ds = PhiDataset(cfg, mode="train", logger=logger)
+  File "D:\Code\qna\Code\datasets\phi_dataset.py", line 142, in __init__
+    self._infer_or_validate_n_classes()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\Code\qna\Code\datasets\phi_dataset.py", line 541, in _infer_or_validate_n_classes
+    raise ValueError(f"[PhiDataset] Значення y виходить за межі n_classes={self.n_classes_cfg}: max(y)={max_label}")
+ValueError: [PhiDataset] Значення y виходить за межі n_classes=4: max(y)=9
+2025-12-19T14:52:46+0200 | INFO | qna | Конфіг завантажено з: config.yaml
+2025-12-19T14:52:46+0200 | INFO | qna | Конфіг | n_qubits=8 | n_layers=3 | topology=ring | enc=ry | meas=Z | device=default.qubit | shots=10 | diff=parameter-shift
+2025-12-19T14:52:46+0200 | INFO | qna | Навчання | batch_size=64 | epochs=20 | lr=0.001 | grad_clip=0.00 | n_classes=4
+2025-12-19T14:52:46+0200 | INFO | qna | Дані    | train=./data/train_phi_cls0123.npz | val=./data/val_phi_cls0123.npz | angle_max=3.141592653589793 | k=2.5
+2025-12-19T14:52:46+0200 | INFO | qna | seed_everything: встановлено сид=42 (random/numpy/torch)
+2025-12-19T14:52:46+0200 | INFO | qna | Сіди через seed_everything(seed=42, deterministic_torch=False)
+2025-12-19T14:52:46+0200 | INFO | qna | Run name: EXP_20251219_145246_optqnaadam_measz_encry_nq8_k25_L3_shots10
+2025-12-19T14:52:46+0200 | INFO | qna | Run dir:  ./runs\EXP_20251219_145246_optqnaadam_measz_encry_nq8_k25_L3_shots10
+2025-12-19T14:52:46+0200 | INFO | qna | Збережено snapshot конфігу: ./runs\EXP_20251219_145246_optqnaadam_measz_encry_nq8_k25_L3_shots10\config.snapshot.yaml
+2025-12-19T14:52:46+0200 | INFO | qna | Артефакти будуть у: ./runs\EXP_20251219_145246_optqnaadam_measz_encry_nq8_k25_L3_shots10
+2025-12-19T14:52:46+0200 | INFO | qna | [PhiDataset] init: mode=train | path='./data' | suf='' | use_suf=True | target_classes=None
+2025-12-19T14:52:46+0200 | INFO | qna | [PhiDataset] init: cfg pca.dim=8
+2025-12-19T14:52:46+0200 | INFO | qna | [PhiDataset] y_path=./data\y_train.npy
+2025-12-19T14:52:46+0200 | INFO | qna | [PhiDataset] y: shape=(50000,), dtype=int64, uniques={0: 4936, 1: 5618, 2: 4965, 3: 5109, 4: 4868, 5: 4518, 6: 4932, 7: 5221, 8: 4876, 9: 4957}
+2025-12-19T14:52:46+0200 | INFO | qna | [PhiDataset] Z candidates: ['./data\\Z_train_std.npy', './data\\Z_train_std.npy.fp'] | chosen: ./data\Z_train_std.npy
+2025-12-19T14:52:46+0200 | WARNING | qna | [PhiDataset] AngleEncoder: ігнорую невідомі kwargs: ['clip']; дозволені=['angle_max', 'k', 'no_clip']
+2025-12-19T14:52:46+0200 | INFO | qna | [PhiDataset] Побудовано φ з Z: AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793}) | φ∈[-3.142, 3.142], clip-rate≈0.98% | mode=train | cache=True
+2025-12-19T14:52:46+0200 | INFO | qna | [PhiDataset] meta: {'mode': 'train', 'source': 'Z', 'encoder': "AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793})", 'n_qubits': 8, 'cached': True}
+2025-12-19T14:52:46+0200 | ERROR | qna | Помилка під час тренування: [PhiDataset] Значення y виходить за межі n_classes=4: max(y)=9
+Traceback (most recent call last):
+  File "D:\Code\qna\Code\trainers\train_quantum.py", line 740, in main
+    train_loader, val_loader = _build_loaders(config, seed, logger)
+                               ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Code\qna\Code\trainers\train_quantum.py", line 459, in _build_loaders
+    train_ds = PhiDataset(cfg, mode="train", logger=logger)
+  File "D:\Code\qna\Code\datasets\phi_dataset.py", line 142, in __init__
+    self._infer_or_validate_n_classes()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\Code\qna\Code\datasets\phi_dataset.py", line 541, in _infer_or_validate_n_classes
+    raise ValueError(f"[PhiDataset] Значення y виходить за межі n_classes={self.n_classes_cfg}: max(y)={max_label}")
+ValueError: [PhiDataset] Значення y виходить за межі n_classes=4: max(y)=9
+2025-12-19T14:54:04+0200 | INFO | qna | Конфіг завантажено з: config.yaml
+2025-12-19T14:54:04+0200 | INFO | qna | Конфіг | n_qubits=8 | n_layers=3 | topology=ring | enc=ry | meas=Z | device=default.qubit | shots=10 | diff=parameter-shift
+2025-12-19T14:54:04+0200 | INFO | qna | Навчання | batch_size=64 | epochs=20 | lr=0.001 | grad_clip=0.00 | n_classes=4
+2025-12-19T14:54:04+0200 | INFO | qna | Дані    | train=./data/train_phi_cls0123.npz | val=./data/val_phi_cls0123.npz | angle_max=3.141592653589793 | k=2.5
+2025-12-19T14:54:04+0200 | INFO | qna | seed_everything: встановлено сид=42 (random/numpy/torch)
+2025-12-19T14:54:04+0200 | INFO | qna | Сіди через seed_everything(seed=42, deterministic_torch=False)
+2025-12-19T14:54:04+0200 | INFO | qna | Run name: EXP_20251219_145404_optqnaadam_measz_encry_nq8_k25_L3_shots10
+2025-12-19T14:54:04+0200 | INFO | qna | Run dir:  ./runs\EXP_20251219_145404_optqnaadam_measz_encry_nq8_k25_L3_shots10
+2025-12-19T14:54:04+0200 | INFO | qna | Збережено snapshot конфігу: ./runs\EXP_20251219_145404_optqnaadam_measz_encry_nq8_k25_L3_shots10\config.snapshot.yaml
+2025-12-19T14:54:04+0200 | INFO | qna | Артефакти будуть у: ./runs\EXP_20251219_145404_optqnaadam_measz_encry_nq8_k25_L3_shots10
+2025-12-19T14:54:04+0200 | INFO | qna | [PhiDataset] init: mode=train | path='./data' | suf='_cls0123' | use_suf=True | target_classes={0: None, 1: None, 2: None, 3: None}
+2025-12-19T14:54:04+0200 | INFO | qna | [PhiDataset] init: cfg pca.dim=8
+2025-12-19T14:54:04+0200 | INFO | qna | [PhiDataset] y_path=./data\y_train_cls0123.npy
+2025-12-19T14:54:04+0200 | INFO | qna | [PhiDataset] y: shape=(19803,), dtype=int64, uniques={0: 4738, 1: 5394, 2: 4766, 3: 4905}
+2025-12-19T14:54:04+0200 | INFO | qna | [PhiDataset] Z candidates: ['./data\\Z_train_std_cls0123.npy', './data\\Z_train_std.npy_cls0123.fp'] | chosen: ./data\Z_train_std_cls0123.npy
+2025-12-19T14:54:05+0200 | WARNING | qna | [PhiDataset] AngleEncoder: ігнорую невідомі kwargs: ['clip']; дозволені=['angle_max', 'k', 'no_clip']
+2025-12-19T14:54:05+0200 | INFO | qna | [PhiDataset] Побудовано φ з Z: AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793}) | φ∈[-3.142, 3.142], clip-rate≈0.78% | mode=train | cache=True
+2025-12-19T14:54:05+0200 | INFO | qna | [PhiDataset] meta: {'mode': 'train', 'source': 'Z', 'encoder': "AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793})", 'n_qubits': 8, 'cached': True}
+2025-12-19T14:54:06+0200 | INFO | qna | [PhiDataset] mode=train | N=19803, n_qubits=8, n_classes=4 | |phi|_min=-3.14159, |phi|_max=3.14159, |phi|_mean≈1.01031
+2025-12-19T14:54:06+0200 | INFO | qna | [PhiDataset] Розподіл класів: [4738, 5394, 4766, 4905]
+2025-12-19T14:54:06+0200 | INFO | qna | [PhiDataset] φ clip-rate≈0.0078 (|φ| близько angle_max=3.14159), діапазон≈[-3.14159, 3.14159]
+2025-12-19T14:54:06+0200 | INFO | qna | [PhiDataset] init: mode=val | path='./data' | suf='_cls0123' | use_suf=True | target_classes={0: None, 1: None, 2: None, 3: None}
+2025-12-19T14:54:06+0200 | INFO | qna | [PhiDataset] init: cfg pca.dim=8
+2025-12-19T14:54:06+0200 | INFO | qna | [PhiDataset] y_path=./data\y_val_cls0123.npy
+2025-12-19T14:54:06+0200 | INFO | qna | [PhiDataset] y: shape=(4951,), dtype=int64, uniques={0: 1185, 1: 1348, 2: 1192, 3: 1226}
+2025-12-19T14:54:06+0200 | INFO | qna | [PhiDataset] Z candidates: ['./data\\Z_val_std_cls0123.npy', './data\\Z_val_std.npy_cls0123.fp'] | chosen: ./data\Z_val_std_cls0123.npy
+2025-12-19T14:54:06+0200 | WARNING | qna | [PhiDataset] AngleEncoder: ігнорую невідомі kwargs: ['clip']; дозволені=['angle_max', 'k', 'no_clip']
+2025-12-19T14:54:06+0200 | INFO | qna | [PhiDataset] Побудовано φ з Z: AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793}) | φ∈[-3.142, 3.142], clip-rate≈0.73% | mode=val | cache=True
+2025-12-19T14:54:06+0200 | INFO | qna | [PhiDataset] meta: {'mode': 'val', 'source': 'Z', 'encoder': "AngleEncoder({'k': 2.5, 'angle_max': 3.141592653589793})", 'n_qubits': 8, 'cached': True}
+2025-12-19T14:54:06+0200 | INFO | qna | [PhiDataset] mode=val | N=4951, n_qubits=8, n_classes=4 | |phi|_min=-3.14159, |phi|_max=3.14159, |phi|_mean≈1.00730
+2025-12-19T14:54:06+0200 | INFO | qna | [PhiDataset] Розподіл класів: [1185, 1348, 1192, 1226]
+2025-12-19T14:54:06+0200 | INFO | qna | [PhiDataset] φ clip-rate≈0.0073 (|φ| близько angle_max=3.14159), діапазон≈[-3.14159, 3.14159]
+2025-12-19T14:54:06+0200 | INFO | qna | Train size: 19803 | Val size: 4951
+2025-12-19T14:54:06+0200 | INFO | qna | [QuantumClassifier] n_qubits=8, out_dim=8, n_classes=4 | device=default.qubit, shots=10, layers=3, topology=ring, encoding=ry, meas=Z, diff=parameter-shift, reupload=True
+2025-12-19T14:54:06+0200 | INFO | qna | Reseed device: 42 -> 42 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-19T14:54:06+0200 | INFO | qna | [QuantumClassifier] param/device seed set to 42
+2025-12-19T14:54:06+0200 | INFO | qna | Reseed quantum device RNG → 42
+2025-12-19T14:54:06+0200 | INFO | qna | Quantum backend: None | shots=10
+2025-12-19T14:54:08+0200 | INFO | qna | Sanity: E=(64, 8) → logits=(64, 4) | n_classes=4 | dry-run 1690.4 ms
+2025-12-19T14:54:08+0200 | WARNING | qna | [optim.registry] Ignoring unsupported kwargs for qnaadam/optimizer: ['alpha', 'mode', 'momentum', 'state_key']
+2025-12-19T14:54:30+0200 | INFO | qna | [optim.registry] created optimizer 'qnaadam' (groups=1) with keys=['amsgrad', 'betas', 'clip_in_optimizer', 'eps', 'error_if_nonfinite', 'grad_eps', 'lambda_var', 'lr', 'lr_max_mult', 'lr_min_mult', 'max_norm', 'maximize', 'vtilde_key', 'weight_decay']
+2025-12-19T14:54:30+0200 | INFO | qna | Оптимізатор з registry: qna_adam
+2025-12-19T14:54:30+0200 | INFO | qna | EarlyStopping: disabled (enabled=false).
+2025-12-19T14:54:30+0200 | INFO | qna | Старт тренування: epochs=20, batch_size=64, grad_clip=0.00, shots=10
+2025-12-19T14:54:32+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=10, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}
+2025-12-19T14:55:50+0200 | INFO | qna | [QNAAdam] options: clip_in_optimizer=False | max_norm=[1.0] | error_if_nonfinite=False | grad_eps=[1e-06] | lambda_var=[0.0] | lr_min_mult=[0.2] | lr_max_mult=[1.0] | vtilde_key(s)=['qna_vtilde']
+2025-12-23T22:46:51+0200 | INFO | qna | [Epoch 1] train: loss=1.3835, acc=0.272, ‖∇‖raw=0.156, ‖∇‖=0.156, clip_rate=0.00, V~=4.457e-02, shots=10 | scale_mean=1.000 p90=1.000
+2025-12-23T22:46:51+0200 | INFO | qna | Switch shots: 10 -> 2048 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 2048, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-23T22:46:51+0200 | INFO | qna | [QuantumClassifier] shots set to 2048
+2025-12-23T22:46:51+0200 | INFO | qna | Встановлено shots → 2048
+2025-12-23T23:00:14+0200 | INFO | qna | [Epoch 1]   val: loss=1.3608, acc=0.284 (eval_shots=2048)
+2025-12-23T23:00:14+0200 | INFO | qna | Збережено найкращу модель (val_loss=1.360819) → ./runs\EXP_20251219_145404_optqnaadam_measz_encry_nq8_k25_L3_shots10\model.pt
+2025-12-23T23:00:14+0200 | INFO | qna | Switch shots: 2048 -> 10 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-23T23:00:14+0200 | INFO | qna | [QuantumClassifier] shots set to 10
+2025-12-23T23:00:14+0200 | INFO | qna | Встановлено shots → 10
+2025-12-23T23:00:16+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=10, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}
+2025-12-25T15:53:26+0200 | INFO | qna | [Epoch 2] train: loss=1.3211, acc=0.349, ‖∇‖raw=0.176, ‖∇‖=0.176, clip_rate=0.00, V~=4.413e-02, shots=10 | scale_mean=1.000 p90=1.000
+2025-12-25T15:53:26+0200 | INFO | qna | Switch shots: 10 -> 2048 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 2048, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-25T15:53:26+0200 | INFO | qna | [QuantumClassifier] shots set to 2048
+2025-12-25T15:53:26+0200 | INFO | qna | Встановлено shots → 2048
+2025-12-25T15:55:31+0200 | INFO | qna | [Epoch 2]   val: loss=1.2366, acc=0.473 (eval_shots=2048)
+2025-12-25T15:55:32+0200 | INFO | qna | Збережено найкращу модель (val_loss=1.236608) → ./runs\EXP_20251219_145404_optqnaadam_measz_encry_nq8_k25_L3_shots10\model.pt
+2025-12-25T15:55:32+0200 | INFO | qna | Switch shots: 2048 -> 10 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-25T15:55:32+0200 | INFO | qna | [QuantumClassifier] shots set to 10
+2025-12-25T15:55:32+0200 | INFO | qna | Встановлено shots → 10
+2025-12-25T15:55:33+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=10, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}
+2025-12-25T22:45:39+0200 | INFO | qna | [Epoch 3] train: loss=1.2274, acc=0.412, ‖∇‖raw=0.200, ‖∇‖=0.200, clip_rate=0.00, V~=4.394e-02, shots=10 | scale_mean=1.000 p90=1.000
+2025-12-25T22:45:39+0200 | INFO | qna | Switch shots: 10 -> 2048 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 2048, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-25T22:45:39+0200 | INFO | qna | [QuantumClassifier] shots set to 2048
+2025-12-25T22:45:39+0200 | INFO | qna | Встановлено shots → 2048
+2025-12-25T22:47:40+0200 | INFO | qna | [Epoch 3]   val: loss=1.1292, acc=0.512 (eval_shots=2048)
+2025-12-25T22:47:40+0200 | INFO | qna | Збережено найкращу модель (val_loss=1.129220) → ./runs\EXP_20251219_145404_optqnaadam_measz_encry_nq8_k25_L3_shots10\model.pt
+2025-12-25T22:47:40+0200 | INFO | qna | Switch shots: 2048 -> 10 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-25T22:47:40+0200 | INFO | qna | [QuantumClassifier] shots set to 10
+2025-12-25T22:47:40+0200 | INFO | qna | Встановлено shots → 10
+2025-12-25T22:47:41+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=10, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}
+2025-12-27T00:22:22+0200 | INFO | qna | [Epoch 4] train: loss=1.1663, acc=0.435, ‖∇‖raw=0.217, ‖∇‖=0.217, clip_rate=0.00, V~=4.393e-02, shots=10 | scale_mean=1.000 p90=1.000
+2025-12-27T00:22:22+0200 | INFO | qna | Switch shots: 10 -> 2048 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 2048, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-27T00:22:22+0200 | INFO | qna | [QuantumClassifier] shots set to 2048
+2025-12-27T00:22:22+0200 | INFO | qna | Встановлено shots → 2048
+2025-12-27T00:24:18+0200 | INFO | qna | [Epoch 4]   val: loss=1.0728, acc=0.524 (eval_shots=2048)
+2025-12-27T00:24:19+0200 | INFO | qna | Збережено найкращу модель (val_loss=1.072785) → ./runs\EXP_20251219_145404_optqnaadam_measz_encry_nq8_k25_L3_shots10\model.pt
+2025-12-27T00:24:19+0200 | INFO | qna | Switch shots: 2048 -> 10 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-27T00:24:19+0200 | INFO | qna | [QuantumClassifier] shots set to 10
+2025-12-27T00:24:19+0200 | INFO | qna | Встановлено shots → 10
+2025-12-27T00:24:20+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=10, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}
+2025-12-27T16:21:31+0200 | INFO | qna | [Epoch 5] train: loss=1.1419, acc=0.444, ‖∇‖raw=0.236, ‖∇‖=0.236, clip_rate=0.00, V~=4.395e-02, shots=10 | scale_mean=1.000 p90=1.000
+2025-12-27T16:21:31+0200 | INFO | qna | Switch shots: 10 -> 2048 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 2048, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-27T16:21:31+0200 | INFO | qna | [QuantumClassifier] shots set to 2048
+2025-12-27T16:21:31+0200 | INFO | qna | Встановлено shots → 2048
+2025-12-27T16:23:26+0200 | INFO | qna | [Epoch 5]   val: loss=1.0440, acc=0.536 (eval_shots=2048)
+2025-12-27T16:23:26+0200 | INFO | qna | Збережено найкращу модель (val_loss=1.044016) → ./runs\EXP_20251219_145404_optqnaadam_measz_encry_nq8_k25_L3_shots10\model.pt
+2025-12-27T16:23:26+0200 | INFO | qna | Switch shots: 2048 -> 10 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-27T16:23:26+0200 | INFO | qna | [QuantumClassifier] shots set to 10
+2025-12-27T16:23:26+0200 | INFO | qna | Встановлено shots → 10
+2025-12-27T16:23:28+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=10, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}
+2025-12-29T23:08:32+0200 | INFO | qna | [Epoch 6] train: loss=1.1306, acc=0.449, ‖∇‖raw=0.251, ‖∇‖=0.251, clip_rate=0.00, V~=4.396e-02, shots=10 | scale_mean=1.000 p90=1.000
+2025-12-29T23:08:32+0200 | INFO | qna | Switch shots: 10 -> 2048 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 2048, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-29T23:08:32+0200 | INFO | qna | [QuantumClassifier] shots set to 2048
+2025-12-29T23:08:32+0200 | INFO | qna | Встановлено shots → 2048
+2025-12-29T23:10:24+0200 | INFO | qna | [Epoch 6]   val: loss=1.0274, acc=0.524 (eval_shots=2048)
+2025-12-29T23:10:24+0200 | INFO | qna | Збережено найкращу модель (val_loss=1.027405) → ./runs\EXP_20251219_145404_optqnaadam_measz_encry_nq8_k25_L3_shots10\model.pt
+2025-12-29T23:10:24+0200 | INFO | qna | Switch shots: 2048 -> 10 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2025-12-29T23:10:24+0200 | INFO | qna | [QuantumClassifier] shots set to 10
+2025-12-29T23:10:24+0200 | INFO | qna | Встановлено shots → 10
+2025-12-29T23:10:26+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=10, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}
+2026-01-05T00:24:16+0200 | INFO | qna | [Epoch 7] train: loss=1.1141, acc=0.451, ‖∇‖raw=0.252, ‖∇‖=0.252, clip_rate=0.00, V~=4.396e-02, shots=10 | scale_mean=1.000 p90=1.000
+2026-01-05T00:24:16+0200 | INFO | qna | Switch shots: 10 -> 2048 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 2048, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2026-01-05T00:24:16+0200 | INFO | qna | [QuantumClassifier] shots set to 2048
+2026-01-05T00:24:16+0200 | INFO | qna | Встановлено shots → 2048
+2026-01-05T00:26:15+0200 | INFO | qna | [Epoch 7]   val: loss=1.0175, acc=0.525 (eval_shots=2048)
+2026-01-05T00:26:16+0200 | INFO | qna | Збережено найкращу модель (val_loss=1.017518) → ./runs\EXP_20251219_145404_optqnaadam_measz_encry_nq8_k25_L3_shots10\model.pt
+2026-01-05T00:26:16+0200 | INFO | qna | Switch shots: 2048 -> 10 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2026-01-05T00:26:16+0200 | INFO | qna | [QuantumClassifier] shots set to 10
+2026-01-05T00:26:16+0200 | INFO | qna | Встановлено shots → 10
+2026-01-05T00:26:17+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=10, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}
+2026-01-07T19:55:30+0200 | INFO | qna | [Epoch 8] train: loss=1.1103, acc=0.448, ‖∇‖raw=0.261, ‖∇‖=0.261, clip_rate=0.00, V~=4.394e-02, shots=10 | scale_mean=1.000 p90=1.000
+2026-01-07T19:55:31+0200 | INFO | qna | Switch shots: 10 -> 2048 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 2048, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2026-01-07T19:55:31+0200 | INFO | qna | [QuantumClassifier] shots set to 2048
+2026-01-07T19:55:31+0200 | INFO | qna | Встановлено shots → 2048
+2026-01-07T19:57:29+0200 | INFO | qna | [Epoch 8]   val: loss=1.0100, acc=0.507 (eval_shots=2048)
+2026-01-07T19:57:29+0200 | INFO | qna | Збережено найкращу модель (val_loss=1.010020) → ./runs\EXP_20251219_145404_optqnaadam_measz_encry_nq8_k25_L3_shots10\model.pt
+2026-01-07T19:57:29+0200 | INFO | qna | Switch shots: 2048 -> 10 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2026-01-07T19:57:29+0200 | INFO | qna | [QuantumClassifier] shots set to 10
+2026-01-07T19:57:29+0200 | INFO | qna | Встановлено shots → 10
+2026-01-07T19:57:31+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=10, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}
+2026-01-08T21:07:46+0200 | INFO | qna | [Epoch 9] train: loss=1.1099, acc=0.449, ‖∇‖raw=0.269, ‖∇‖=0.269, clip_rate=0.00, V~=4.393e-02, shots=10 | scale_mean=1.000 p90=1.000
+2026-01-08T21:07:46+0200 | INFO | qna | Switch shots: 10 -> 2048 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 2048, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2026-01-08T21:07:46+0200 | INFO | qna | [QuantumClassifier] shots set to 2048
+2026-01-08T21:07:46+0200 | INFO | qna | Встановлено shots → 2048
+2026-01-08T21:09:48+0200 | INFO | qna | [Epoch 9]   val: loss=1.0078, acc=0.509 (eval_shots=2048)
+2026-01-08T21:09:50+0200 | INFO | qna | Збережено найкращу модель (val_loss=1.007843) → ./runs\EXP_20251219_145404_optqnaadam_measz_encry_nq8_k25_L3_shots10\model.pt
+2026-01-08T21:09:50+0200 | INFO | qna | Switch shots: 2048 -> 10 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2026-01-08T21:09:50+0200 | INFO | qna | [QuantumClassifier] shots set to 10
+2026-01-08T21:09:50+0200 | INFO | qna | Встановлено shots → 10
+2026-01-08T21:09:51+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=10, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}
+2026-01-09T03:35:43+0200 | INFO | qna | [Epoch 10] train: loss=1.1117, acc=0.448, ‖∇‖raw=0.265, ‖∇‖=0.265, clip_rate=0.00, V~=4.393e-02, shots=10 | scale_mean=1.000 p90=1.000
+2026-01-09T03:35:43+0200 | INFO | qna | Switch shots: 10 -> 2048 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 2048, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2026-01-09T03:35:43+0200 | INFO | qna | [QuantumClassifier] shots set to 2048
+2026-01-09T03:35:43+0200 | INFO | qna | Встановлено shots → 2048
+2026-01-09T03:37:37+0200 | INFO | qna | [Epoch 10]   val: loss=1.0068, acc=0.524 (eval_shots=2048)
+2026-01-09T03:37:37+0200 | INFO | qna | Збережено найкращу модель (val_loss=1.006760) → ./runs\EXP_20251219_145404_optqnaadam_measz_encry_nq8_k25_L3_shots10\model.pt
+2026-01-09T03:37:37+0200 | INFO | qna | Switch shots: 2048 -> 10 | meta={'axes': ('Z',), 'n_meas': 1, 'output_dim': 8, 'n_qubits': 8, 'n_layers': 3, 'encoding': 'ry', 'reupload': True, 'topology': 'ring', 'diff_method': 'parameter-shift', 'device': {'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}, 'measurement_mode': 'expval', 'expval_dim': 8, 'var_dim': 0}
+2026-01-09T03:37:37+0200 | INFO | qna | [QuantumClassifier] shots set to 10
+2026-01-09T03:37:37+0200 | INFO | qna | Встановлено shots → 10
+2026-01-09T03:37:38+0200 | INFO | qna | [Inline-DocPS] stats-QNode ready | shots=10, expval_dim=8, var_dim=8, device={'name': 'default.qubit', 'n_wires': 8, 'shots': 10, 'analytic': False}
