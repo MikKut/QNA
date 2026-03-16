@@ -1,0 +1,16 @@
+config	optimizer	shots	lr	lambda_var	seed	epochs
+adam_s7_seed42.yaml	adam	7	0.0003	0	42	35
+adam_s15_seed42.yaml	adam	15	0.0003	0	42	35
+adam_s25_seed42.yaml	adam	25	0.0003	0	42	35
+adam_matched_s7_seed42.yaml	adam_matched	7	0.00027	0	42	35
+adam_matched_s15_seed42.yaml	adam_matched	15	0.00027	0	42	35
+adam_matched_s25_seed42.yaml	adam_matched	25	0.00027	0	42	35
+qna_s7_lam8_seed42.yaml	qna_adam	7	0.0003	8	42	35
+qna_s7_lam16_seed42.yaml	qna_adam	7	0.0003	16	42	35
+qna_s7_lam32_seed42.yaml	qna_adam	7	0.0003	32	42	35
+qna_s15_lam8_seed42.yaml	qna_adam	15	0.0003	8	42	35
+qna_s15_lam16_seed42.yaml	qna_adam	15	0.0003	16	42	35
+qna_s15_lam32_seed42.yaml	qna_adam	15	0.0003	32	42	35
+qna_s25_lam8_seed42.yaml	qna_adam	25	0.0003	8	42	35
+qna_s25_lam16_seed42.yaml	qna_adam	25	0.0003	16	42	35
+qna_s25_lam32_seed42.yaml	qna_adam	25	0.0003	32	42	35
